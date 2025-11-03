@@ -14,7 +14,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.core.io.Resource;
 
 @Service
@@ -33,8 +37,8 @@ public class AnimeServiceImpl implements AnimeService {
     }
 
     @Override
-    public Optional<Anime> findByTitle(String animeName) {
-        return animeRepository.findByTitle(animeName);
+    public Optional<Anime> findByTitleAndEpisodeNumber(String animeTitle, int episodeNumber) {
+        return animeRepository.findByTitleAndEpisodeNumber(animeTitle, episodeNumber);
     }
 
     public Resource streamAnime(AnimeInfoRequestDto dto) {
@@ -42,12 +46,10 @@ public class AnimeServiceImpl implements AnimeService {
                 .findByTitleAndEpisodeNumber(dto.getAnimeTitle(), dto.getEpisodeNumber())
                 .orElseThrow(() -> new IllegalArgumentException("Анимето не е намерено!"));
 
-        AnimeStreamRequestDto streamRequest = AnimeStreamRequestDto.builder()
-                .m3u8Link(anime.getM3u8Link())
-                .build();
+        String m3u8Link = anime.getM3u8Link();
+        String sessionId = UUID.randomUUID().toString();
 
-        // Викаме Anime микросървиса през FeignClient
-        ResponseEntity<Resource> response = animeClient.streamAnime(streamRequest);
+        ResponseEntity<Resource> response = animeClient.streamAnime(m3u8Link, sessionId);
         if(response.getStatusCode() == HttpStatus.NOT_FOUND){
             throw new IllegalArgumentException("Video anime not found");
         }
@@ -67,12 +69,19 @@ public class AnimeServiceImpl implements AnimeService {
 
     @Override
     public Optional<Anime> findByTitleAndEpisodeNumber(AnimeInfoRequestDto animeInfoRequestDto) {
-        return animeRepository.findByTitleAndEpisodeNumber(animeInfoRequestDto.getAnimeTitle(), animeInfoRequestDto.getEpisodeNumber());
+        String decodedAnimeTitle = URLDecoder.decode(animeInfoRequestDto.getAnimeTitle(), StandardCharsets.UTF_8);
+        Integer episodeNumber = animeInfoRequestDto.getEpisodeNumber();
+
+        System.out.println(decodedAnimeTitle);
+        System.out.println(episodeNumber);
+
+        return animeRepository.findByTitleAndEpisodeNumber(decodedAnimeTitle, episodeNumber);
     }
 
 
     @Override
     public Anime createAnime(AnimeInfoRequestDto dto) {
+        System.out.println(dto.getAnimeUrl());
         Optional<Anime> existing = findByTitleAndEpisodeNumber(dto);
 
         if (existing.isPresent()) {
@@ -82,7 +91,7 @@ public class AnimeServiceImpl implements AnimeService {
         String m3u8Link = getM3U8Link(dto.getAnimeUrl());
 
         Anime anime = Anime.builder()
-                .title(dto.getAnimeTitle())
+                .title(URLDecoder.decode(dto.getAnimeTitle(), StandardCharsets.UTF_8))
                 .episodeNumber(dto.getEpisodeNumber())
                 .m3u8Link(m3u8Link)
                 .build();

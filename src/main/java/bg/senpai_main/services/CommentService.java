@@ -19,7 +19,7 @@ public interface CommentService {
 
     Comment updateComment(UUID id, CommentChangeRequestDto commentChangeRequest);
 
-    Page<Comment> getCommentsForAnime(String animeName, int pageNumber, int sizeNumber);
+    Page<Comment> getCommentsForAnime(String animeName, int episodeNumber, int pageNumber, int sizeNumber);
 
     Optional<Comment> getById(UUID commentId);
 }

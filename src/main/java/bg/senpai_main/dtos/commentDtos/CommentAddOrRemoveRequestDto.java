@@ -12,5 +12,6 @@ import java.time.LocalDateTime;
 public class CommentAddOrRemoveRequestDto {
     private String animeName;
     private String content;
+    private int episodeNumber;
     private LocalDateTime createdOn;
 }

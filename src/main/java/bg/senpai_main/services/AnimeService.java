@@ -8,10 +8,10 @@ import org.springframework.core.io.Resource;
 import java.util.Optional;
 
 public interface AnimeService {
-    Optional<Anime> findByTitle(String animeTitle);
     String getM3U8Link(String url);
     Anime createAnime(AnimeInfoRequestDto animeInfoRequestDto);
     Optional<Anime> findByTitleAndEpisodeNumber(AnimeInfoRequestDto animeInfoRequestDto);
+    Optional<Anime> findByTitleAndEpisodeNumber(String animeTitle, int episodeNumber);
     Resource streamAnime(AnimeInfoRequestDto dto);
 
 }

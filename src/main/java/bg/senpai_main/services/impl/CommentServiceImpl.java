@@ -33,7 +33,7 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponseInfoDto addComment(UUID id, CommentAddOrRemoveRequestDto dto) {
         Member member = memberService.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-        Anime anime = animeService.findByTitle(dto.getAnimeName())
+        Anime anime = animeService.findByTitleAndEpisodeNumber(dto.getAnimeName(), dto.getEpisodeNumber())
                 .orElseThrow(() -> new IllegalArgumentException("Anime not found"));
 
         Comment comment = Comment.builder()
@@ -58,7 +58,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void removeComment(UUID id, CommentAddOrRemoveRequestDto commentRemoveRequestDto) {
         Member member = memberService.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        Anime anime = animeService.findByTitle(commentRemoveRequestDto.getAnimeName()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
+        Anime anime = animeService.findByTitleAndEpisodeNumber(commentRemoveRequestDto.getAnimeName(), commentRemoveRequestDto.getEpisodeNumber()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
         String content = commentRemoveRequestDto.getContent();
         LocalDateTime createdOn = commentRemoveRequestDto.getCreatedOn();
 
@@ -76,7 +76,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Comment updateComment(UUID id, CommentChangeRequestDto commentChangeRequestDto) {
         Member member = memberService.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        Anime anime = animeService.findByTitle(commentChangeRequestDto.getAnimeName()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
+        Anime anime = animeService.findByTitleAndEpisodeNumber(commentChangeRequestDto.getAnimeName(), commentChangeRequestDto.getEpisodeNumber()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
         LocalDateTime createdOn = commentChangeRequestDto.getCreatedOn();
         String oldContent = commentChangeRequestDto.getOldContent();
         String newContent = commentChangeRequestDto.getNewContent();
@@ -92,9 +92,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Comment> getCommentsForAnime(String animeName, int pageNumber, int sizeNumber){
+    public Page<Comment> getCommentsForAnime(String animeName, int episodeNumber, int pageNumber, int sizeNumber){
         //проверяваме дали анимето съществува, ако не - хвърляме грешка
-        animeService.findByTitle(animeName).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
+        animeService.findByTitleAndEpisodeNumber(animeName, episodeNumber).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
 
         return commentRepository.findByAnime_Title(animeName, PageRequest.of(pageNumber, sizeNumber));
     }

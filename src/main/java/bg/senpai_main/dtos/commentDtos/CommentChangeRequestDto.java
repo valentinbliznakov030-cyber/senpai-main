@@ -13,5 +13,6 @@ public class CommentChangeRequestDto {
     private String oldContent;
     private String newContent;
     private String animeName;
+    private int episodeNumber;
     private LocalDateTime createdOn;
 }

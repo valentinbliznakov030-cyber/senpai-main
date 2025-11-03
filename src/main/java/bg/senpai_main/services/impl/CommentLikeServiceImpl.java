@@ -30,7 +30,7 @@ public class CommentLikeServiceImpl implements CommentLikeService {
     public void addLike(UUID likerId, CommentLikeOrDeleteRequest commentLikeRequest) {
         Member memberCreatorComment = memberService.findByUsername(commentLikeRequest.getCommentCreator()).orElseThrow(() -> new IllegalArgumentException("Member created the comment not found"));
         Member memberLikedTheComment = memberService.findById(likerId).orElseThrow(() -> new IllegalArgumentException("Member liking the comment not found"));
-        Anime anime = animeService.findByTitle(commentLikeRequest.getAnimeName()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
+        Anime anime = animeService.findByTitleAndEpisodeNumber(commentLikeRequest.getAnimeName(), commentLikeRequest.getEpisodeNumber()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
         String content = commentLikeRequest.getContent();
         LocalDateTime createdOnComment = commentLikeRequest.getCreatedOnComment();
         Comment comment = commentService.findByContentAndAnimeAndMemberAndCreatedOn(anime, memberCreatorComment, content, createdOnComment).orElseThrow(() -> new IllegalArgumentException("Comment not found"));
@@ -48,7 +48,7 @@ public class CommentLikeServiceImpl implements CommentLikeService {
         Member memberCreatorComment = memberService.findByUsername(commentDeleteRequest.getCommentCreator()).orElseThrow(() -> new IllegalArgumentException("Member created the comment not found"));
         LocalDateTime createdOnComment = commentDeleteRequest.getCreatedOnComment();
         Member memberLikedTheComment = memberService.findById(likerId).orElseThrow(() -> new IllegalArgumentException("Member liking the comment not found"));
-        Anime anime = animeService.findByTitle(commentDeleteRequest.getAnimeName()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
+        Anime anime = animeService.findByTitleAndEpisodeNumber(commentDeleteRequest.getAnimeName(), commentDeleteRequest.getEpisodeNumber()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
         String content = commentDeleteRequest.getContent();
 
         Comment comment = commentService.findByContentAndAnimeAndMemberAndCreatedOn(anime, memberCreatorComment, content, createdOnComment).orElseThrow(() -> new IllegalArgumentException("Comment not found"));

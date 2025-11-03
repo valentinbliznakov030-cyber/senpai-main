@@ -63,7 +63,7 @@ public class FavouriteController {
 
     @PostMapping
     public ResponseEntity<?> addFavAnime(@AuthenticationPrincipal MemberData memberData, @RequestBody FavoriteAddRequest favoriteAddRequest){
-        Anime anime = animeService.findByTitle(favoriteAddRequest.getAnimeName()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
+        Anime anime = animeService.findByTitleAndEpisodeNumber(favoriteAddRequest.getAnimeName(), favoriteAddRequest.getEpisodeNumber()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
         Member member = memberService.findById(memberData.getId()).orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
         Favorite favorite = favoriteService.addToFavorites(member, anime);

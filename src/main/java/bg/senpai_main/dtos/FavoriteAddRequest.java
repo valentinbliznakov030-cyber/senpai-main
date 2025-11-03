@@ -11,5 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class FavoriteAddRequest {
     private String animeName;
+    private int episodeNumber;
     private String username;
 }

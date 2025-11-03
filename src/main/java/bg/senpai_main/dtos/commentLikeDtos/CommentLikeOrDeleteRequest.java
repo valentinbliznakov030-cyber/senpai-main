@@ -13,5 +13,6 @@ public class CommentLikeOrDeleteRequest {
     private String content;
     private String commentCreator;
     private String animeName;
+    private int episodeNumber;
     private LocalDateTime createdOnComment;
 }

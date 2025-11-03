@@ -34,10 +34,11 @@ public class CommentController {
     @GetMapping("/anime")
     public ResponseEntity<CommentsForAnimeResponseDto> getCommentForAnime(@AuthenticationPrincipal MemberData memberData,
                                                 @RequestParam("name") String animeName,
+                                                @RequestParam("episodeNumber") int episodeNumber,
                                                 @RequestParam(defaultValue = "0") int page,
                                                 @RequestParam(defaultValue = "15") int size){
 
-        Page<Comment> comments = commentService.getCommentsForAnime(animeName, page, size);
+        Page<Comment> comments = commentService.getCommentsForAnime(animeName,episodeNumber, page, size);
 
         List<CommentResponseInfoDto> commentResponseInfoDtoList = comments.getContent().stream().map(comment -> {
             MemberResponseDto commentCreator = MemberResponseDto.memberResponseDto(comment.getMember());
