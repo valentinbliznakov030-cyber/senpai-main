@@ -12,6 +12,5 @@ public interface AnimeService {
     Anime createAnime(AnimeInfoRequestDto animeInfoRequestDto);
     Optional<Anime> findByTitleAndEpisodeNumber(AnimeInfoRequestDto animeInfoRequestDto);
     Optional<Anime> findByTitleAndEpisodeNumber(String animeTitle, int episodeNumber);
-    Resource streamAnime(AnimeInfoRequestDto dto);
-
+    Resource streamAnime(String m3u8Link, String vodName);
 }

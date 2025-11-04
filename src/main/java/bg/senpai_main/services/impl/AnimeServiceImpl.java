@@ -41,19 +41,13 @@ public class AnimeServiceImpl implements AnimeService {
         return animeRepository.findByTitleAndEpisodeNumber(animeTitle, episodeNumber);
     }
 
-    public Resource streamAnime(AnimeInfoRequestDto dto) {
-        Anime anime = animeRepository
-                .findByTitleAndEpisodeNumber(dto.getAnimeTitle(), dto.getEpisodeNumber())
-                .orElseThrow(() -> new IllegalArgumentException("Анимето не е намерено!"));
+    public Resource streamAnime(String m3u8Link, String vidName) {
+        ResponseEntity<Resource> response = animeClient.streamAnime(m3u8Link, vidName);
 
-        String m3u8Link = anime.getM3u8Link();
-        String sessionId = UUID.randomUUID().toString();
-
-        ResponseEntity<Resource> response = animeClient.streamAnime(m3u8Link, sessionId);
-        if(response.getStatusCode() == HttpStatus.NOT_FOUND){
-            throw new IllegalArgumentException("Video anime not found");
+        if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
+            throw new IllegalArgumentException("Видео не е намерено: " + m3u8Link);
         }
-        // Връщаме само самия поток (Resource)
+
         return response.getBody();
     }
     @Override

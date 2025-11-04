@@ -10,6 +10,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -27,9 +30,9 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET,
-                                "/comment/**", "/watch/**", "/comment-likes/**"
+                                "/api/v1/comment/**", "/watch/**", "/comment-likes/**"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/anime/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/anime/**").permitAll()
                         .requestMatchers(
                                 "/member/register",
                                          "/member/login"
@@ -41,5 +44,19 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("http://localhost:9000"); // ✅ това е фронт-ендът ти
+        config.addAllowedMethod("*");                     // разрешаваме всички методи (GET, POST, ...)
+        config.addAllowedHeader("*");                     // разрешаваме всички headers
+        config.setAllowCredentials(true);                 // ако пращаш куки/токени
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }

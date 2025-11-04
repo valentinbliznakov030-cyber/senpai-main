@@ -19,6 +19,6 @@ public interface AnimeClient {
     AnimeM3U8LinkDto getM3u8Link(@RequestParam("url") String animeUrl);
 
     @PostMapping(value = "/stream", consumes = "application/json")
-    ResponseEntity<Resource> streamAnime(@RequestParam("m3u8Link") String m3u8Link, @RequestParam("sessionId") String sessionId);
+    ResponseEntity<Resource> streamAnime(@RequestParam("m3u8Link") String m3u8Link, @RequestParam("vidName") String vidName);
 }
 
