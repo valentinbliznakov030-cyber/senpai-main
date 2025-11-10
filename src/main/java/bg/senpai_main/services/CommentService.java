@@ -12,14 +12,12 @@ import java.util.UUID;
 
 public interface CommentService {
 
-    CommentResponseInfoDto addComment(UUID id, CommentAddOrRemoveRequestDto dto);
-    void removeComment(UUID id, CommentAddOrRemoveRequestDto commentRemoveRequestDto);
+    Comment addComment(UUID id, CommentAddRequestDto dto);
+    void removeComment(UUID commentId);
 
-    Optional<Comment> findByContentAndAnimeAndMemberAndCreatedOn(Anime anime, Member member, String content, LocalDateTime createdOn);
+    Comment updateComment(UUID commentEditor, CommentChangeRequestDto commentChangeRequestDto);
 
-    Comment updateComment(UUID id, CommentChangeRequestDto commentChangeRequest);
-
-    Page<Comment> getCommentsForAnime(String animeName, int episodeNumber, int pageNumber, int sizeNumber);
+    Page<Comment> getCommentsForAnime(UUID animeId, int pageNumber, int sizeNumber);
 
     Optional<Comment> getById(UUID commentId);
 }

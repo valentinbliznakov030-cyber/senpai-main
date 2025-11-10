@@ -1,11 +1,8 @@
 package bg.senpai_main.web;
 
 import bg.senpai_main.configs.MemberData;
-import bg.senpai_main.dtos.FavoriteAddRequest;
-import bg.senpai_main.dtos.FavoriteAnimeResponseInfoDto;
-import bg.senpai_main.entities.Anime;
+import bg.senpai_main.dtos.*;
 import bg.senpai_main.entities.Favorite;
-import bg.senpai_main.entities.Member;
 import bg.senpai_main.responses.FavoriteAnimeResponseDto;
 import bg.senpai_main.services.AnimeService;
 import bg.senpai_main.services.FavoriteService;
@@ -19,11 +16,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/favourite")
+@RequestMapping("/api/v1/favourite")
 @RequiredArgsConstructor
 public class FavouriteController {
     private final FavoriteService favoriteService;
@@ -37,12 +33,10 @@ public class FavouriteController {
         List<FavoriteAnimeResponseInfoDto> animeList = favorites.getContent().stream().map(favorite -> {
             UUID id = favorite.getId();
             String animeTitle = favorite.getAnime().getTitle();
-            String animeM3u8Link = favorite.getAnime().getM3u8Link();
 
 
             return FavoriteAnimeResponseInfoDto
                     .builder()
-                    .animeM3u8Link(animeM3u8Link)
                     .animeTitle(animeTitle)
                     .id(id)
                     .build();
@@ -62,18 +56,26 @@ public class FavouriteController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addFavAnime(@AuthenticationPrincipal MemberData memberData, @RequestBody FavoriteAddRequest favoriteAddRequest){
-        Anime anime = animeService.findByTitleAndEpisodeNumber(favoriteAddRequest.getAnimeName(), favoriteAddRequest.getEpisodeNumber()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
-        Member member = memberService.findById(memberData.getId()).orElseThrow(() -> new IllegalArgumentException("Member not found"));
+    public ResponseEntity<?> addFavAnime(@AuthenticationPrincipal MemberData memberData, @RequestBody FavoriteAddRequestDto favoriteAddRequestDto){
+        Favorite favorite = favoriteService.addToFavorites(memberData.getId(), favoriteAddRequestDto);
 
-        Favorite favorite = favoriteService.addToFavorites(member, anime);
+        FavouriteAddResponseDto favouriteAddResponseDto = FavouriteAddResponseDto
+                .builder()
+                .animeTitle(favorite.getAnime().getTitle())
+                .id(favorite.getId())
+                .success(true)
+                .statusCode(200)
+                .build();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(memberData.getId()).toUri();
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(member.getId()).toUri();
-
-        return ResponseEntity.created(location).body(favorite);
+        return ResponseEntity.created(location).body(favouriteAddResponseDto);
 
     }
 
-
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> removeFavourite(@PathVariable("id") UUID id){
+        favoriteService.removeFavourite(id);
+        return ResponseEntity.noContent().build();
+    }
 
 }

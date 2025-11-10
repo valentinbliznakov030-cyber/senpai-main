@@ -1,25 +1,27 @@
 package bg.senpai_main.services.impl;
 
 import bg.senpai.common.dtos.AnimeM3U8LinkDto;
+import bg.senpai.common.dtos.VideoCreationRequestDto;
+import bg.senpai.common.dtos.VideoCreationResponseDto;
 import bg.senpai_main.clients.AnimeClient;
 import bg.senpai_main.dtos.AnimeInfoRequestDto;
-import bg.senpai_main.dtos.AnimeStreamRequestDto;
 import bg.senpai_main.entities.Anime;
+import bg.senpai_main.exceptions.AnimeVideoException;
 import bg.senpai_main.repositories.AnimeRepository;
 import bg.senpai_main.services.AnimeService;
 import bg.senpai_main.services.CommentService;
 import bg.senpai_main.services.MemberService;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
-
-import org.springframework.core.io.Resource;
 
 @Service
 public class AnimeServiceImpl implements AnimeService {
@@ -41,46 +43,60 @@ public class AnimeServiceImpl implements AnimeService {
         return animeRepository.findByTitleAndEpisodeNumber(animeTitle, episodeNumber);
     }
 
-    public Resource streamAnime(String m3u8Link, String vidName) {
-        ResponseEntity<Resource> response = animeClient.streamAnime(m3u8Link, vidName);
-
-        if (response.getStatusCode() == HttpStatus.NOT_FOUND) {
-            throw new IllegalArgumentException("Видео не е намерено: " + m3u8Link);
-        }
-
-        return response.getBody();
-    }
     @Override
-    public String getM3U8Link(String animeUrl){
+    public String getM3U8Link(String animeUrl) {
         AnimeM3U8LinkDto animeM3U8LinkDto = animeClient.getM3u8Link(animeUrl);
 
-        if(!animeM3U8LinkDto.isSuccess()){
+        if (!animeM3U8LinkDto.isSuccess()) {
             throw new IllegalArgumentException(animeM3U8LinkDto.getMessage());
         }
 
         return animeM3U8LinkDto.getM3u8Link();
     }
 
+
     @Override
-    public Optional<Anime> findByTitleAndEpisodeNumber(AnimeInfoRequestDto animeInfoRequestDto) {
-        String decodedAnimeTitle = URLDecoder.decode(animeInfoRequestDto.getAnimeTitle(), StandardCharsets.UTF_8);
-        Integer episodeNumber = animeInfoRequestDto.getEpisodeNumber();
+    public VideoCreationResponseDto createVideo(String m3u8Link) {
+        String vidName = UUID.randomUUID().toString() + "_" +
+                DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")
+                        .format(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
 
-        System.out.println(decodedAnimeTitle);
-        System.out.println(episodeNumber);
+        VideoCreationRequestDto videoCreationRequestDto = VideoCreationRequestDto
+                .builder()
+                .m3u8Link(m3u8Link)
+                .vidName(vidName)
+                .build();
 
-        return animeRepository.findByTitleAndEpisodeNumber(decodedAnimeTitle, episodeNumber);
+        VideoCreationResponseDto videoPathInfoDto = animeClient.createVideo(videoCreationRequestDto);
+
+        if(!videoPathInfoDto.isSuccess()){
+            throw new AnimeVideoException("Video not generated or found");
+        }
+
+        return videoPathInfoDto;
+
     }
 
+    @Override
+    public Optional<Anime> findById(UUID animeId) {
+        return animeRepository.findById(animeId);
+    }
 
     @Override
     public Anime createAnime(AnimeInfoRequestDto dto) {
         System.out.println(dto.getAnimeUrl());
-        Optional<Anime> existing = findByTitleAndEpisodeNumber(dto);
+        if(dto.getAnimeId() != null){
+            Optional<Anime> existing = animeRepository.findById(dto.getAnimeId());
 
-        if (existing.isPresent()) {
-            return existing.get();
+            if (existing.isPresent()) {
+                return existing.get();
+            }
         }
+
+        if(findByTitleAndEpisodeNumber(dto.getAnimeTitle(), dto.getEpisodeNumber()).isPresent()){
+            return findByTitleAndEpisodeNumber(dto.getAnimeTitle(), dto.getEpisodeNumber()).get();
+        }
+
 
         String m3u8Link = getM3U8Link(dto.getAnimeUrl());
 
@@ -91,5 +107,10 @@ public class AnimeServiceImpl implements AnimeService {
                 .build();
 
         return animeRepository.save(anime);
+    }
+
+    @Override
+    public Optional<Anime> findByTitle(String animeTitle) {
+        return animeRepository.findByTitle(animeTitle);
     }
 }

@@ -1,6 +1,7 @@
 package bg.senpai_main.web;
 
 import bg.senpai_main.configs.JwtUtil;
+import bg.senpai_main.configs.MemberData;
 import bg.senpai_main.dtos.memberDtos.LoginRequest;
 import bg.senpai_main.dtos.memberDtos.MemberRegisterDTO;
 import bg.senpai_main.dtos.memberDtos.MemberResponseDto;
@@ -14,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -21,7 +23,7 @@ import java.net.URI;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/member")
+@RequestMapping("/api/v1/member")
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
@@ -56,5 +58,10 @@ public class MemberController {
 
 
         return ResponseEntity.status(HttpStatus.OK).body(jwtUtil.generateToken(loginRequest.getUsername()));
+    }
+
+    @GetMapping("/profilePictureUrl")
+    public ResponseEntity<String> getPfP(@AuthenticationPrincipal MemberData memberData){
+        return ResponseEntity.ok(memberService.pFpUrl(memberData.getId()));
     }
 }

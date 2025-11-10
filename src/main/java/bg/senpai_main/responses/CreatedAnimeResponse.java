@@ -11,5 +11,4 @@ public class CreatedAnimeResponse {
     private String animeTitle;
     private Integer episodeNumber;
     private String m3u8Link;
-    private String vidName;
 }

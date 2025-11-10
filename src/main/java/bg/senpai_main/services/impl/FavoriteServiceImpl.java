@@ -1,9 +1,13 @@
 package bg.senpai_main.services.impl;
 
+import bg.senpai_main.dtos.FavoriteAddRequestDto;
 import bg.senpai_main.entities.Anime;
 import bg.senpai_main.entities.Favorite;
 import bg.senpai_main.entities.Member;
+import bg.senpai_main.exceptions.EntityAlreadyExistException;
+import bg.senpai_main.exceptions.EntityNotFoundException;
 import bg.senpai_main.repositories.FavoriteRepository;
+import bg.senpai_main.services.AnimeService;
 import bg.senpai_main.services.FavoriteService;
 import bg.senpai_main.services.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,11 +29,17 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     private final FavoriteRepository favoriteRepository;
     private final MemberService memberService;
+    private final AnimeService animeService;
+
     @Override
-    public Favorite addToFavorites(Member member, Anime anime) {
+    public Favorite addToFavorites(UUID memberId, FavoriteAddRequestDto favoriteAddRequestDto) {
+        Anime anime = animeService.findByTitle(favoriteAddRequestDto.getAnimeTitle()).orElseThrow(() -> new EntityNotFoundException("Anime not found"));
+        Member member = memberService.findById(memberId).orElseThrow(() -> new EntityNotFoundException("Member not found"));
+
         if (favoriteRepository.existsByMemberAndAnime(member, anime)) {
-            throw new IllegalStateException("Anime already in favorites!");
+            throw new EntityAlreadyExistException("Anime already in favorites!");
         }
+
 
         Favorite favorite = Favorite.builder()
                 .member(member)
@@ -41,13 +50,9 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
-    public void removeFromFavorites(Member member, Anime anime) {
-        List<Favorite> favorites = favoriteRepository.findByMember(member);
-        Favorite existing = favorites.stream()
-                .filter(f -> f.getAnime().equals(anime))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Favorite not found!"));
-        favoriteRepository.delete(existing);
+    public void removeFavourite(UUID favouriteId) {
+        Favorite favorite = favoriteRepository.findById(favouriteId).orElseThrow(() -> new EntityNotFoundException("Favourite not found"));
+        favoriteRepository.delete(favorite);
     }
 
     @Override
@@ -66,8 +71,8 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
 
-    public Page<Favorite> getFavoritesAnimesByMember(UUID memberId, int page, int size) {
-        memberService.findById(memberId).orElseThrow(() -> new IllegalArgumentException("Member not found!"));
+    public Page<Favorite> getFavoritesAnimesByMember(UUID memberId, Integer page, Integer size) {
+        memberService.findById(memberId).orElseThrow(() -> new EntityNotFoundException("Member not found!"));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         return favoriteRepository.findByMember_Id(memberId, pageable);

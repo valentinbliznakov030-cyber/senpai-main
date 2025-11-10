@@ -1,5 +1,6 @@
 package bg.senpai_main.services;
 
+import bg.senpai_main.dtos.FavoriteAddRequestDto;
 import bg.senpai_main.entities.Anime;
 import bg.senpai_main.entities.Favorite;
 import bg.senpai_main.entities.Member;
@@ -11,9 +12,9 @@ import java.util.UUID;
 
 public interface FavoriteService {
 
-    Favorite addToFavorites(Member member, Anime anime);
+    Favorite addToFavorites(UUID memberId, FavoriteAddRequestDto favoriteAddRequestDto);
 
-    void removeFromFavorites(Member member, Anime anime);
+    void removeFavourite(UUID favouriteId);
 
     boolean isFavorite(Member member, Anime anime);
 
@@ -21,7 +22,7 @@ public interface FavoriteService {
 
     void deleteById(UUID id);
 
-    Page<Favorite> getFavoritesAnimesByMember(UUID memberId, int page, int size);
+    Page<Favorite> getFavoritesAnimesByMember(UUID memberId, Integer page, Integer size);
 
     Optional<Favorite> findById(UUID id);
 }

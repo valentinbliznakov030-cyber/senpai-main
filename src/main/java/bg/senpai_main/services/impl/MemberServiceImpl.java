@@ -3,6 +3,7 @@ package bg.senpai_main.services.impl;
 import bg.senpai_main.dtos.memberDtos.MemberRegisterDTO;
 import bg.senpai_main.entities.Member;
 import bg.senpai_main.enums.Role;
+import bg.senpai_main.exceptions.EntityNotFoundException;
 import bg.senpai_main.repositories.MemberRepository;
 import bg.senpai_main.services.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class MemberServiceImpl implements MemberService {
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .role(Role.USER)
                 .active(true)
+                .profilePictureUrl(dto.getProfilePictureUrl())
                 .registeredOn(LocalDateTime.now())
                 .build();
 
@@ -92,5 +94,12 @@ public class MemberServiceImpl implements MemberService {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+
+    @Override
+    public String pFpUrl(UUID memberId) {
+        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("Member not found"));
+        return member.getProfilePictureUrl();
     }
 }

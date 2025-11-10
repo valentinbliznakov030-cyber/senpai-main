@@ -1,16 +1,15 @@
 package bg.senpai_main.services.impl;
 
 import bg.senpai_main.dtos.commentDtos.*;
-import bg.senpai_main.dtos.memberDtos.MemberResponseDto;
 import bg.senpai_main.entities.Anime;
 import bg.senpai_main.entities.Comment;
 import bg.senpai_main.entities.Member;
+import bg.senpai_main.exceptions.EntityNotFoundException;
 import bg.senpai_main.repositories.CommentRepository;
 import bg.senpai_main.services.AnimeService;
 import bg.senpai_main.services.CommentService;
 import bg.senpai_main.services.MemberService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -30,73 +29,56 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public CommentResponseInfoDto addComment(UUID id, CommentAddOrRemoveRequestDto dto) {
-        Member member = memberService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-        Anime anime = animeService.findByTitleAndEpisodeNumber(dto.getAnimeName(), dto.getEpisodeNumber())
-                .orElseThrow(() -> new IllegalArgumentException("Anime not found"));
+    public Comment addComment(UUID memberId, CommentAddRequestDto dto) {
+        Member member = memberService.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found"));
+        Anime anime = animeService.findById(dto.getAnimeId())
+                .orElseThrow(() -> new EntityNotFoundException("Anime not found"));
+
+        System.out.println(anime.getTitle());
+        System.out.println(anime.getId());
+        System.out.println(anime.getM3u8Link());
+        String content = dto.getContent();
 
         Comment comment = Comment.builder()
-                .content(dto.getContent())
+                .content(content)
                 .member(member)
                 .createdOn(LocalDateTime.now())
                 .anime(anime)
                 .build();
 
-        Comment saved = commentRepository.save(comment);
-
-        return CommentResponseInfoDto.builder()
-                .content(saved.getContent())
-                .likes(saved.getLikes().size())
-                .isLikedByCurrentMember(false)
-                .commentCreator(MemberResponseDto.memberResponseDto(saved.getMember()))
-                .createdOn(saved.getCreatedOn())
-                .build();
+        return commentRepository.save(comment);
     }
 
 
     @Override
-    public void removeComment(UUID id, CommentAddOrRemoveRequestDto commentRemoveRequestDto) {
-        Member member = memberService.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        Anime anime = animeService.findByTitleAndEpisodeNumber(commentRemoveRequestDto.getAnimeName(), commentRemoveRequestDto.getEpisodeNumber()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
-        String content = commentRemoveRequestDto.getContent();
-        LocalDateTime createdOn = commentRemoveRequestDto.getCreatedOn();
-
-        Comment foundComment = commentRepository.findByContentAndAnimeAndMemberAndCreatedOn(content, anime, member, createdOn).orElseThrow(() -> new IllegalArgumentException("Comment already deleted"));
-
-        commentRepository.delete(foundComment);
-
+    public void removeComment(UUID commentId) {
+        commentRepository.deleteById(commentId);
     }
 
-    @Override
-    public Optional<Comment> findByContentAndAnimeAndMemberAndCreatedOn(Anime anime, Member member, String content, LocalDateTime createdOn) {
-        return commentRepository.findByContentAndAnimeAndMemberAndCreatedOn(content, anime, member, createdOn);
-    }
+
 
     @Override
-    public Comment updateComment(UUID id, CommentChangeRequestDto commentChangeRequestDto) {
-        Member member = memberService.findById(id).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        Anime anime = animeService.findByTitleAndEpisodeNumber(commentChangeRequestDto.getAnimeName(), commentChangeRequestDto.getEpisodeNumber()).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
-        LocalDateTime createdOn = commentChangeRequestDto.getCreatedOn();
-        String oldContent = commentChangeRequestDto.getOldContent();
-        String newContent = commentChangeRequestDto.getNewContent();
+    public Comment updateComment(UUID commentEditorId, CommentChangeRequestDto commentChangeRequestDto) {
+        Comment foundCommentToChange = commentRepository.findById(commentChangeRequestDto.getCommentId()).orElseThrow(() -> new EntityNotFoundException("Comment already deleted"));
+        Member commentAuthor = memberService.findById(foundCommentToChange.getMember().getId()).orElseThrow(() -> new EntityNotFoundException("Member not found"));
 
-        Comment foundCommentToChange = commentRepository.findByContentAndAnimeAndMemberAndCreatedOn(oldContent, anime, member, createdOn).orElseThrow(() -> new IllegalArgumentException("Comment already deleted"));
+        if(commentAuthor.getId().compareTo(commentEditorId) != 0){
+            throw new IllegalArgumentException("Cannot change others comments");
+        }
 
-        foundCommentToChange.setContent(newContent);
+        foundCommentToChange.setContent(commentChangeRequestDto.getNewContent());
 
         return commentRepository.save(foundCommentToChange);
     }
 
 
-
     @Override
     @Transactional(readOnly = true)
-    public Page<Comment> getCommentsForAnime(String animeName, int episodeNumber, int pageNumber, int sizeNumber){
-        //проверяваме дали анимето съществува, ако не - хвърляме грешка
-        animeService.findByTitleAndEpisodeNumber(animeName, episodeNumber).orElseThrow(() -> new IllegalArgumentException("Anime not found"));
+    public Page<Comment> getCommentsForAnime(UUID animeId, int pageNumber, int sizeNumber){
+        Anime anime = animeService.findById(animeId).orElseThrow(() -> new EntityNotFoundException("Anime not found"));
 
-        return commentRepository.findByAnime_Title(animeName, PageRequest.of(pageNumber, sizeNumber));
+        return commentRepository.findByAnime(anime, PageRequest.of(pageNumber, sizeNumber));
     }
 
 

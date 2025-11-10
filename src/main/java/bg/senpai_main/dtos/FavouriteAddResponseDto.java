@@ -9,7 +9,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FavoriteAnimeResponseInfoDto {
-    private UUID id;
+public class FavouriteAddResponseDto {
+    private boolean success;
+    private int statusCode;
     private String animeTitle;
+    private UUID id;
 }

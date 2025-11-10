@@ -7,11 +7,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-public class SubscriptionStatusDTO {
-    private String planType;
-    private int watchCount;
-    private int watchLimit;
-    private boolean limitReached;
+@AllArgsConstructor
+public class FavoriteAddRequestDto {
+    private String animeTitle;
 }

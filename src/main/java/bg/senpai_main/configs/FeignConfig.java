@@ -1,4 +1,5 @@
 package bg.senpai_main.configs;
+import feign.Request;
 import feign.codec.Decoder;
 import feign.optionals.OptionalDecoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
@@ -7,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+
+import java.time.Duration;
 
 
 @Configuration
@@ -18,6 +21,15 @@ public class FeignConfig {
                 new ResponseEntityDecoder(
                         new SpringDecoder(() -> new HttpMessageConverters(new RestTemplate().getMessageConverters()))
                 )
+        );
+    }
+
+    @Bean
+    public Request.Options requestOptions() {
+        return new Request.Options(
+                Duration.ofMinutes(15),   // колко да чака за свързване
+                Duration.ofMinutes(30),  // колко да чака за четене (изтегляне)
+                true                     // следвай redirect-и
         );
     }
 }

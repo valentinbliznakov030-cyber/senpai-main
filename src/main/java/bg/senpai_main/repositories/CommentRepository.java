@@ -13,12 +13,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CommentRepository extends JpaRepository<Comment, UUID> {
-    List<Comment> findByAnime(Anime anime);
-    Optional<Comment> findByContentAndAnimeAndMemberAndCreatedOn(
-            String content,
-            Anime anime,
-            Member member,
-            LocalDateTime createdOn
-    );
-    Page<Comment> findByAnime_Title(String title, Pageable pageable);
+    Page<Comment> findByAnime(Anime anime, Pageable pageable);
 }

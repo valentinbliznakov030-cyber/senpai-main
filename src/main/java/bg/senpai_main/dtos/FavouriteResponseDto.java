@@ -1,16 +1,14 @@
 package bg.senpai_main.dtos;
 
 import bg.senpai_main.dtos.memberDtos.MemberResponseDto;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class FavouriteResponseDto {
-    private MemberResponseDto memberResponseDto;
-    private AnimeResponseDto animeResponseDto;
+    private MemberResponseDto member;
+    private AnimeResponseDto addedAnimeToFavourites;
 }

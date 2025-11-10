@@ -28,4 +28,6 @@ public interface MemberService {
 
     boolean deleteAll();
 
+    String pFpUrl(UUID memberId);
+
 }

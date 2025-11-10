@@ -1,15 +1,22 @@
 package bg.senpai_main.dtos;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import bg.senpai_main.dtos.memberDtos.MemberResponseDto;
+import bg.senpai_main.entities.Anime;
+import bg.senpai_main.entities.Member;
+import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AnimeResponseDto {
     private String title;
-    private String m3u8Link;
+
+    public static AnimeResponseDto animeResponseDto(Anime anime){
+        return AnimeResponseDto
+                .builder()
+                .title(anime.getTitle())
+                .build();
+    }
 }

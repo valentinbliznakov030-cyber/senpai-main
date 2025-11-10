@@ -5,13 +5,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class CommentAddOrRemoveRequestDto {
-    private String animeName;
+public class CommentAddRequestDto {
+    private UUID animeId;
     private String content;
-    private int episodeNumber;
-    private LocalDateTime createdOn;
 }

@@ -1,16 +1,17 @@
 package bg.senpai_main.clients;
 
-import bg.senpai.common.dtos.AnimeM3U8LinkDto;
+import bg.senpai.common.dtos.*;
 import bg.senpai_main.configs.FeignConfig;
-import bg.senpai_main.dtos.AnimeStreamRequestDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @FeignClient(
         name = "anime-service",
-        url = "http://localhost:8081/api/v1/anime", // <-- смени порта ако твоя е различен
+        url = "http://localhost:8081/api/v1/anime",
         configuration = FeignConfig.class
 )
 public interface AnimeClient {
@@ -18,7 +19,13 @@ public interface AnimeClient {
     @GetMapping("/m3u8Link")
     AnimeM3U8LinkDto getM3u8Link(@RequestParam("url") String animeUrl);
 
-    @PostMapping(value = "/stream", consumes = "application/json")
-    ResponseEntity<Resource> streamAnime(@RequestParam("m3u8Link") String m3u8Link, @RequestParam("vidName") String vidName);
+    @GetMapping(value = "/stream")
+    ResponseEntity<Resource> streamAnime(@RequestParam("vidName") String vidName);
+
+    @PostMapping(value="/video", produces = "application/json")
+    VideoCreationResponseDto createVideo(@RequestBody VideoCreationRequestDto videoCreationRequestDto);
+
+    @PostMapping(value = "/subtitles", produces = "application/json")
+    SubtitlesDownloadedResponseDto downloadSubtitles(@RequestBody SubtitlesDownloadRequestDto subtitlesDownloadRequestDto);
 }
 

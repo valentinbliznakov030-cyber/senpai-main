@@ -13,5 +13,5 @@ import java.util.List;
 @Builder
 public class CommentPageData {
     private Page<Comment> commentsForAnime;
-    private List<CommentResponseInfoDto> commentResponseInfoDtoList;
+    private List<CommentGetResponseInfoDto> commentGetResponseInfoDtoList;
 }

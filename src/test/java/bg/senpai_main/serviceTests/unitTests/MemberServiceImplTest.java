@@ -1,4 +1,4 @@
-package bg.senpai_main.serviceTests.MemberServiceTest;
+package bg.senpai_main.serviceTests.unitTests;
 
 import bg.senpai_main.dtos.memberDtos.MemberRegisterDTO;
 import bg.senpai_main.entities.Member;
@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -21,7 +20,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class MemberServiceTest {
+public class MemberServiceImplTest {
     @Mock
     private MemberRepository memberRepository;
 
@@ -122,11 +121,6 @@ public class MemberServiceTest {
                 .hasMessageContaining("Username already exists!");
 
         verify(memberRepository).findByUsername(anotherPerson.getUsername());
-
-    }
-
-    @Test
-    public void WhenRequestFindAll_ReturnFoundAllMembers(){
 
     }
 }
