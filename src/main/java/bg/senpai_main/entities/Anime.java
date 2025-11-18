@@ -20,15 +20,14 @@ public class Anime {
     @Column(nullable = false)
     private String title;
 
+    @Column(nullable = false)
+    private String consumetAnimeId;
+
     @Column(nullable = false, unique = true)
     private String m3u8Link;
-
-    @Column(nullable = false)
-    private Integer episodeNumber;
 
     @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Favorite> favorites = new ArrayList<>();
 
-    @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments = new ArrayList<>();
+
 }

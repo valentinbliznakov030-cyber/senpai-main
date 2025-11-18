@@ -32,6 +32,6 @@ public class Comment {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "anime_id", nullable = false)
-    private Anime anime;
+    @JoinColumn(name = "episode_id", nullable = false)
+    private Episode episode;
 }

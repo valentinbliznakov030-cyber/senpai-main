@@ -9,14 +9,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface AnimeService {
-    String getM3U8Link(String url);
-
     Anime createAnime(AnimeInfoRequestDto animeInfoRequestDto);
-
-
-    Optional<Anime> findByTitleAndEpisodeNumber(String animeTitle, int episodeNumber);
-
-    VideoCreationResponseDto createVideo(String m3u8Link);
+    Optional<Anime> findByConsumetAnimeId(String consumetAnimeId);
 
     Optional<Anime> findByTitle(String animeName);
     Optional<Anime> findById(UUID animeId);

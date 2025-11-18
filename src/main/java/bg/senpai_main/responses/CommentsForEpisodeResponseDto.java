@@ -10,11 +10,11 @@ import java.util.List;
 
 @Getter
 @Setter
-public class CommentsForAnimeResponseDto extends GlobalContentResponseDto<Comment>{
+public class CommentsForEpisodeResponseDto extends GlobalContentResponseDto<Comment>{
     private List<CommentGetResponseInfoDto> comments;
     private boolean isUserLogged;
 
-    public CommentsForAnimeResponseDto(Page<Comment> page, List<CommentGetResponseInfoDto> comments, boolean isUserLogged) {
+    public CommentsForEpisodeResponseDto(Page<Comment> page, List<CommentGetResponseInfoDto> comments, boolean isUserLogged) {
         super(page);
         this.comments = comments;
         this.isUserLogged = isUserLogged;

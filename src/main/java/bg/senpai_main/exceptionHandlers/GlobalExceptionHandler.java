@@ -2,7 +2,9 @@ package bg.senpai_main.exceptionHandlers;
 
 import bg.senpai_main.exceptions.EntityAlreadyExistException;
 import bg.senpai_main.exceptions.EntityNotFoundException;
+import feign.Feign;
 import feign.FeignException;
+import feign.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -40,6 +42,15 @@ public class GlobalExceptionHandler {
                 "status", status.value(),
                 "error", "Microservice error",
                 "message", e.contentUTF8() != null ? e.contentUTF8() : e.getMessage()
+        ));
+    }
+
+    @ExceptionHandler(FeignException.NotFound.class)
+    public ResponseEntity<?> handleFeignNotFoundException(FeignException.NotFound ex){
+        return ResponseEntity.status(404).body(Map.of(
+                "timestamp", LocalDateTime.now().toString(),
+                "status",404,
+                "message", ex.contentUTF8() != null ? ex.contentUTF8() : ex.getMessage()
         ));
     }
 

@@ -123,7 +123,7 @@ public class CommentControllerTest {
 
         Page<Comment> page = new PageImpl<>(List.of(comment), PageRequest.of(0, 15), 1);
 
-        Mockito.when(commentService.getCommentsForAnime(any(UUID.class), anyInt(), anyInt()))
+        Mockito.when(commentService.getCommentsForEpisode(any(UUID.class), anyInt(), anyInt()))
                 .thenReturn(page);
 
         mockMvc.perform(get("/api/v1/comments")

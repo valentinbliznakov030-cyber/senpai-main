@@ -1,4 +1,4 @@
-package bg.senpai_main.responses;
+package bg.senpai_main.dtos;
 
 import lombok.*;
 
@@ -7,8 +7,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreatedAnimeResponse {
-    private String animeTitle;
+public class EpisodeCreationResponseDto {
     private Integer episodeNumber;
     private String m3u8Link;
+    private String sessionId;
 }

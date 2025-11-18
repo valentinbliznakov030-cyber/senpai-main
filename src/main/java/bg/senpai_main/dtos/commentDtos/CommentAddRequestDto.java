@@ -11,6 +11,6 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 public class CommentAddRequestDto {
-    private UUID animeId;
+    private UUID episodeId;
     private String content;
 }

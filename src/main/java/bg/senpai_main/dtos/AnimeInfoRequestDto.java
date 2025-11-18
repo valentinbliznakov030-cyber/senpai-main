@@ -10,8 +10,6 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 public class AnimeInfoRequestDto {
-    private UUID animeId;
     private String animeTitle;
-    private int episodeNumber;
-    private String animeUrl;
+    private String animeConsumetAnimeId;
 }

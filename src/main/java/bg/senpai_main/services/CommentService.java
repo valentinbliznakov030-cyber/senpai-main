@@ -1,12 +1,11 @@
 package bg.senpai_main.services;
 
 import bg.senpai_main.dtos.commentDtos.*;
-import bg.senpai_main.entities.Anime;
 import bg.senpai_main.entities.Comment;
-import bg.senpai_main.entities.Member;
 import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,7 +16,18 @@ public interface CommentService {
 
     Comment updateComment(UUID commentEditor, CommentChangeRequestDto commentChangeRequestDto);
 
-    Page<Comment> getCommentsForAnime(UUID animeId, int pageNumber, int sizeNumber);
+    Page<Comment> getCommentsForEpisode(UUID animeId, int pageNumber, int sizeNumber);
 
     Optional<Comment> getById(UUID commentId);
+
+    List<Comment> findAll();
+    List<Comment> findFilteredComments(
+            UUID commentId,
+            String content,
+            String username,
+            String animeId,
+            String animeTitle,
+            LocalDateTime createdOn,
+            LocalDateTime updateOn
+    );
 }

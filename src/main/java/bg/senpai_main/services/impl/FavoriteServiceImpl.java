@@ -33,7 +33,7 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     @Override
     public Favorite addToFavorites(UUID memberId, FavoriteAddRequestDto favoriteAddRequestDto) {
-        Anime anime = animeService.findByTitle(favoriteAddRequestDto.getAnimeTitle()).orElseThrow(() -> new EntityNotFoundException("Anime not found"));
+        Anime anime = animeService.findById(favoriteAddRequestDto.getAnimeId()).orElseThrow(() -> new EntityNotFoundException("Anime not found"));
         Member member = memberService.findById(memberId).orElseThrow(() -> new EntityNotFoundException("Member not found"));
 
         if (favoriteRepository.existsByMemberAndAnime(member, anime)) {

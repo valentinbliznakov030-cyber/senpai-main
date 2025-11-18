@@ -40,6 +40,11 @@ public class MemberData implements UserDetails {
         return member.getPassword();
     }
 
+    @Override
+    public boolean isEnabled() {
+        return member.isActive();
+    }
+
     public UUID getId(){
         return member.getId();
     }

@@ -5,12 +5,15 @@ import bg.senpai.common.dtos.SubtitlesDownloadRequestDto;
 import bg.senpai.common.dtos.SubtitlesDownloadedResponseDto;
 import bg.senpai_main.clients.AnimeClient;
 import bg.senpai_main.clients.SubscriptionClient;
+import bg.senpai_main.exceptions.EntityNotFoundException;
 import bg.senpai_main.exceptions.SubtitleAccessDeniedException;
 import bg.senpai_main.services.MemberService;
 import bg.senpai_main.services.SubtitlesService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -27,7 +30,11 @@ public class SubtitlesServiceImpl implements SubtitlesService {
             throw new SubtitleAccessDeniedException("Download limit reached for free plan");
         }
 
+        ResponseEntity<SubtitlesDownloadedResponseDto> response = animeClient.downloadSubtitles(subtitlesDownloadRequestDto);
+        if(!Objects.requireNonNull(response.getBody()).isSuccess()){
+            throw new EntityNotFoundException("Subtitle not found");
+        }
 
-        return animeClient.downloadSubtitles(subtitlesDownloadRequestDto); // външното API
+        return response.getBody();
     }
 }

@@ -4,7 +4,7 @@ import bg.senpai_main.configs.MemberData;
 import bg.senpai_main.dtos.memberDtos.MemberResponseDto;
 import bg.senpai_main.dtos.commentDtos.*;
 import bg.senpai_main.entities.Comment;
-import bg.senpai_main.responses.CommentsForAnimeResponseDto;
+import bg.senpai_main.responses.CommentsForEpisodeResponseDto;
 import bg.senpai_main.services.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,12 +29,12 @@ public class CommentController {
     }
 
     @GetMapping
-    public ResponseEntity<CommentsForAnimeResponseDto> getCommentsForAnime(@AuthenticationPrincipal MemberData memberData,
-                                                @RequestParam("animeId") UUID animeId,
-                                                @RequestParam(defaultValue = "0") int page,
-                                                @RequestParam(defaultValue = "15") int size){
+    public ResponseEntity<CommentsForEpisodeResponseDto> getCommentsForEpisode(@AuthenticationPrincipal MemberData memberData,
+                                                                             @RequestParam("episodeId") UUID episodeId,
+                                                                             @RequestParam(defaultValue = "0") int page,
+                                                                             @RequestParam(defaultValue = "15") int size){
 
-        Page<Comment> comments = commentService.getCommentsForAnime(animeId, page, size);
+        Page<Comment> comments = commentService.getCommentsForEpisode(episodeId, page, size);
 
         List<CommentGetResponseInfoDto> commentGetResponseInfoDtoList = comments.getContent().stream().map(comment -> {
             MemberResponseDto commentCreator = MemberResponseDto.memberResponseDto(comment.getMember());
@@ -48,13 +48,13 @@ public class CommentController {
                     .build();
         }).toList();
 
-        CommentsForAnimeResponseDto commentsForAnimeResponseDto = new CommentsForAnimeResponseDto(
+        CommentsForEpisodeResponseDto commentsForEpisodeResponseDto = new CommentsForEpisodeResponseDto(
                 comments,
                 commentGetResponseInfoDtoList,
                 memberData != null
         );
 
-        return ResponseEntity.ok(commentsForAnimeResponseDto);
+        return ResponseEntity.ok(commentsForEpisodeResponseDto);
     }
 
 

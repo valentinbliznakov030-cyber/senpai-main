@@ -30,32 +30,47 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> {})
                 .exceptionHandling(ex -> ex
-                    .authenticationEntryPoint((request, response, authException) -> {
-                        response.setContentType("application/json");
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.getWriter().write("""
-                            {
-                                "error": "Unauthorized",
-                                "message": "Invalid or missing token"
-                            }
-                        """);
-                    })
-                    .accessDeniedHandler((request, response, accessDeniedException) -> {
-                        response.setContentType("application/json");
-                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                        response.getWriter().write("""
-                            {
-                                "error": "Forbidden",
-                                "message": "You don't have permission to access this resource"
-                            }
-                        """);
-                    })
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("""
+                                {
+                                    "error": "Unauthorized",
+                                    "message": "Invalid or missing token"
+                                }
+                            """);
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.getWriter().write("""
+                                {
+                                    "error": "Forbidden",
+                                    "message": "You don't have permission to access this resource"
+                                }
+                            """);
+                        })
                 )
                 .authorizeHttpRequests(auth -> auth
+
+                        // 🔥 ПУБЛИЧНИ: статични файлове (снимки)
+                        .requestMatchers("/profile-pictures/**", "/uploads/**").permitAll()
+
+                        // 🔥 ПУБЛИЧНИ: публични GET заявки
                         .requestMatchers(HttpMethod.GET,
-                                "/api/v1/comments/**", "/api/v1/anime/**"
+                                "/api/v1/comments/**",
+                                "/api/v1/anime/**"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/anime/**", "/api/v1/member/**", "/api/v1/forgot-password/**").permitAll()
+
+                        // 🔥 ПУБЛИЧНИ: публични POST заявки (register, login)
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/anime/**",
+                                "/api/v1/member/**",
+                                "/api/v1/forgot-password/**"
+                        ).permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+
+                        // 🔒 Всичко останало → изисква токен
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -69,15 +84,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("http://localhost:5173"); // твоя React front-end
-        config.addAllowedOrigin("http://localhost:9000"); // ако имаш втори front-end
-        config.addAllowedMethod("*");  // GET, POST, PUT, DELETE, ...
-        config.addAllowedHeader("*");  // разрешава всички headers
-        config.setAllowCredentials(true); // ако пращаш токени или cookies
+        config.addAllowedOrigin("http://localhost:5173");
+        config.addAllowedOrigin("http://localhost:9000");
+        config.addAllowedMethod("*");
+        config.addAllowedHeader("*");
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
 }

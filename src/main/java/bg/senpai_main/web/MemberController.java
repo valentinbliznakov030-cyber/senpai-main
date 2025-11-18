@@ -5,6 +5,7 @@ import bg.senpai_main.configs.MemberData;
 import bg.senpai_main.dtos.memberDtos.LoginRequest;
 import bg.senpai_main.dtos.memberDtos.MemberRegisterDTO;
 import bg.senpai_main.dtos.memberDtos.MemberResponseDto;
+import bg.senpai_main.dtos.memberDtos.UpdateProfileDto;
 import bg.senpai_main.entities.Member;
 import bg.senpai_main.services.MemberService;
 import jakarta.validation.Valid;
@@ -18,8 +19,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -46,22 +53,65 @@ public class MemberController {
     }
 
     @GetMapping("/member/{id}")
-    @PreAuthorize("hasRole('ADMIN') or authentication.principal.id == #id")
     public ResponseEntity<?> getId(@PathVariable UUID id){
-        return ResponseEntity.ok(memberService.findById(id).orElseThrow(() -> new UsernameNotFoundException("Member not found")));
+        Member member = memberService.findById(id).orElseThrow(() -> new UsernameNotFoundException("Member not found"));
+        MemberResponseDto memberResponseDto = MemberResponseDto.memberResponseDto(member);
+        return ResponseEntity.ok(memberResponseDto);
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getMe(@AuthenticationPrincipal MemberData memberData){
+        Member member = memberService.findById(memberData.getId()).orElseThrow(() -> new UsernameNotFoundException("Member not found"));
+        MemberResponseDto memberResponseDto = MemberResponseDto.memberResponseDto(member);
+        return ResponseEntity.ok(memberResponseDto);
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateProfile(@AuthenticationPrincipal MemberData memberData, @RequestBody @Valid UpdateProfileDto dto) {
+        memberService.updateProfile(memberData.getId(), dto);
+        return ResponseEntity.ok("Profile updated successfully!");
+    }
+
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginRequest loginRequest) {
         Authentication authentication = authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-
-        return ResponseEntity.status(HttpStatus.OK).body(jwtUtil.generateToken(loginRequest.getUsername()));
+        return ResponseEntity.status(HttpStatus.OK).body(
+                Map.of(
+                        "token", jwtUtil.generateToken(loginRequest.getUsername()),
+                        "member", MemberResponseDto.memberResponseDto(((MemberData) authentication.getPrincipal()).getMember())
+                )
+        );
     }
 
-    @GetMapping("/profilePictureUrl")
-    public ResponseEntity<String> getPfP(@AuthenticationPrincipal MemberData memberData){
-        return ResponseEntity.ok(memberService.pFpUrl(memberData.getId()));
+
+    @PostMapping("/profilePicture")
+    public ResponseEntity<String> uploadProfilePicture(@AuthenticationPrincipal MemberData user, @RequestParam("file") MultipartFile file) {
+
+        try {
+            String uploadDir = "uploads/profile-pictures/";
+            Files.createDirectories(Paths.get(uploadDir));
+
+            String fileName = user.getId() + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(uploadDir + fileName);
+
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            // Създаваме URL за снимката
+            String url = "http://localhost:8080/profile-pictures/" + fileName;
+            memberService.uploadPfp(url, user.getId());
+            return ResponseEntity.ok(url);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("File upload error");
+        }
     }
+
+    @GetMapping("/profilePicture")
+    public ResponseEntity<String> uploadProfilePicture(@AuthenticationPrincipal MemberData user) {
+        return ResponseEntity.ok(memberService.pFpUrl(user.getId()));
+    }
+
 }
