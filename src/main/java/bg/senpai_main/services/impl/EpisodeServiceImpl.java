@@ -78,9 +78,7 @@ public class EpisodeServiceImpl implements EpisodeService {
         }
 
         return videoCreationResponse.getBody();
-
     }
-
 
     @Override
     public Optional<Episode> findByEpisodeNumberAndAnime(Integer episodeNumber, Anime anime) {
@@ -98,7 +96,6 @@ public class EpisodeServiceImpl implements EpisodeService {
         return findByEpisodeNumberAndAnimeId(episodeCreationRequestDto.getEpisodeNumber(), episodeCreationRequestDto.getAnimeId())
                 .orElseGet(() -> createEpisode(episodeCreationRequestDto, sessionId));
     }
-
 
     @Override
     public Episode findEpisodeByHiAnimeId(String hiAnimeId, int episodeNumber) {

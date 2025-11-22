@@ -37,7 +37,6 @@ public class ForgotPasswordController {
         );
     }
 
-
     @PostMapping("/confirm")
     public ResponseEntity<?> confirm(@RequestBody ChangePasswordRequestDto dto) {
         forgotPasswordService.changePassword(dto);

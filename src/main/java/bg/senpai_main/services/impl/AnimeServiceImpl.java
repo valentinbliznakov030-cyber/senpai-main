@@ -50,7 +50,6 @@ public class AnimeServiceImpl implements AnimeService {
         return animeRepository.findByTitle(animeTitle);
     }
 
-
     @Override
     public Anime getAnime(AnimeInfoRequestDto dto) {
         return animeRepository.findByTitle(dto.getAnimeTitle().trim()).orElseGet(() -> createAnime(dto));
@@ -61,5 +60,4 @@ public class AnimeServiceImpl implements AnimeService {
         return animeRepository.findByHiAnimeId(hiAnimeId);
     }
 }
-
 

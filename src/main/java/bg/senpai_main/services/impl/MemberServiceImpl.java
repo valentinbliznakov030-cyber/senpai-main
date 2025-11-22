@@ -13,6 +13,9 @@ import bg.senpai_main.repositories.MemberRepository;
 import bg.senpai_main.services.MemberService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +39,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CacheManager cacheManager;
 
     @Override
     public Member registerMember(MemberRegisterDTO dto) {
@@ -69,6 +73,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Cacheable(value = "member", key = "#id")
     public Optional<Member> findById(UUID id) {
         return memberRepository.findById(id);
     }
@@ -79,6 +84,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @CacheEvict(value = "member", key = "#memberId")
     public Member changeRole(UUID memberId, Role newRole) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NoSuchElementException("Member not found!"));
@@ -87,6 +93,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @CacheEvict(value = "member", key = "#memberId")
     public void toggleActive(UUID memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NoSuchElementException("Member not found!"));
@@ -95,10 +102,10 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @CacheEvict(value = "member", key = "#memberId")
     public void deleteMember(UUID memberId) {
         memberRepository.deleteById(memberId);
     }
-
 
     @Override
     public boolean deleteAll() {
@@ -110,15 +117,14 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-
     @Override
     public String pFpUrl(UUID memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("Member not found"));
         return member.getProfilePictureUrl();
     }
 
-
     @Override
+    @CacheEvict(value = "member", key = "#memberId")
     public void uploadPfp(String url, UUID memberId) {
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("member not found"));
         member.setProfilePictureUrl(url);
@@ -127,15 +133,13 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "member", key = "#memberId")
     public void updateProfile(UUID memberId, UpdateProfileDto dto) {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new EntityNotFoundException("Member not found"));
 
-        // 🔥 CHECK USERNAME UNIQUE
         if (dto.getUsername() != null && !dto.getUsername().isBlank()) {
-
-            // ако username е различен от текущия
             if (!dto.getUsername().equalsIgnoreCase(member.getUsername())) {
 
                 boolean exists = memberRepository.existsByUsername(dto.getUsername());
@@ -147,7 +151,6 @@ public class MemberServiceImpl implements MemberService {
             }
         }
 
-        // 🔥 CHECK EMAIL UNIQUE
         if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
 
             if (!dto.getEmail().equalsIgnoreCase(member.getEmail())) {
@@ -163,7 +166,6 @@ public class MemberServiceImpl implements MemberService {
 
         memberRepository.save(member);
     }
-
 
     @Override
     public List<Member> findFilteredMembers(String username, String email, Boolean active, Role role, LocalDateTime registeredOn) {
@@ -212,6 +214,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @CacheEvict(value = "member", key = "#dto.id")
     public Member updateMemberByAdmin(AdminMemberUpdateDto dto) {
 
         Member member = memberRepository.findById(dto.getId())
@@ -224,7 +227,6 @@ public class MemberServiceImpl implements MemberService {
 
         return memberRepository.save(member);
     }
-
 
     @Override
     public void adminDeleteProfilePicture(UUID memberId, String imageName) {
@@ -266,12 +268,12 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-
-
     public Member changePassword(String email, String password){
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Member not found"));
+        UUID memberId = member.getId();
         member.setPassword(passwordEncoder.encode(password));
-
-        return memberRepository.save(member);
+        Member saved = memberRepository.save(member);
+        cacheManager.getCache("member").evictIfPresent(memberId);
+        return saved;
     }
 }

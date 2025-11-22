@@ -6,7 +6,6 @@ import bg.senpai_main.entities.Member;
 import bg.senpai_main.entities.WatchHistory;
 import bg.senpai_main.exceptions.EntityNotFoundException;
 import bg.senpai_main.repositories.WatchHistoryRepository;
-import bg.senpai_main.services.AnimeService;
 import bg.senpai_main.services.EpisodeService;
 import bg.senpai_main.services.MemberService;
 import bg.senpai_main.services.WatchHistoryService;
@@ -39,11 +38,9 @@ public class WatchHistoryServiceImpl implements WatchHistoryService {
                 .orElse(null);
 
         if (existing != null) {
-            // update updatedOn
             existing.setUpdatedOn(LocalDateTime.now());
             watchHistoryRepository.save(existing);
         } else {
-            // нов запис
             WatchHistory newEntry = WatchHistory.builder()
                     .member(member)
                     .episode(episode)

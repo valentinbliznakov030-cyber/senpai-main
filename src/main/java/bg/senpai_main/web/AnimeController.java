@@ -5,12 +5,11 @@ import bg.senpai_main.entities.Anime;
 import bg.senpai_main.responses.CreatedOrExistingAnimeResponse;
 import bg.senpai_main.services.AnimeService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,9 +18,8 @@ public class AnimeController {
     private final AnimeService animeService;
 
     @PostMapping
-    public ResponseEntity<CreatedOrExistingAnimeResponse> createAnime(@RequestBody AnimeInfoRequestDto dto) {
+    public ResponseEntity<CreatedOrExistingAnimeResponse> createOrGetAnime(@RequestBody AnimeInfoRequestDto dto) {
         Anime anime = animeService.getAnime(dto);
-
 
         CreatedOrExistingAnimeResponse response = CreatedOrExistingAnimeResponse
                 .builder()

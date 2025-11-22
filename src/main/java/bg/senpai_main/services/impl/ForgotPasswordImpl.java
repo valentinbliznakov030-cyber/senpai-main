@@ -42,7 +42,7 @@ public class ForgotPasswordImpl implements ForgotPasswordService {
 
         return tokenRepository.save(token);
     }
-    //sifhsdifnsfkcnsdfns
+
     @Override
     public boolean verifyCode(String email, String code) {
         Optional<ForgotPasswordToken> tokenOpt = tokenRepository.findByEmail(email);
@@ -55,7 +55,6 @@ public class ForgotPasswordImpl implements ForgotPasswordService {
 
         return token.getToken().equals(code) && !LocalDateTime.now().isAfter(token.getExpiration());
     }
-
 
     private String generate6DigitCode() {
         return String.format("%06d", new Random().nextInt(999999));
@@ -90,7 +89,7 @@ public class ForgotPasswordImpl implements ForgotPasswordService {
         ForgotPasswordToken token = tokenOpt.get();
 
         if (LocalDateTime.now().isAfter(token.getExpiration())) {
-            tokenRepository.deleteByEmail(changePasswordRequestDto.getEmail()); // delete expired token
+            tokenRepository.deleteByEmail(changePasswordRequestDto.getEmail());
             throw new ChangePasswordDeniedException("Password reset token has expired.");
         }
 

@@ -57,7 +57,6 @@ public class CommentController {
         return ResponseEntity.ok(commentsForEpisodeResponseDto);
     }
 
-
     @PostMapping
     public ResponseEntity<CommentAddResponseDto> addComment(@AuthenticationPrincipal MemberData memberData, @RequestBody CommentAddRequestDto commentDto) {
         Comment comment = commentService.addComment(memberData.getId(), commentDto);
@@ -77,14 +76,11 @@ public class CommentController {
         return ResponseEntity.created(location).body(commentAddResponseDto);
     }
 
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removeComment(@AuthenticationPrincipal MemberData memberData, @PathVariable("id") UUID id){
         commentService.removeComment(id);
         return ResponseEntity.noContent().build();
     }
-
-
 
     @PatchMapping()
     public ResponseEntity<CommentChangeResponseDto> changeComment(@AuthenticationPrincipal MemberData memberData, @RequestBody CommentChangeRequestDto commentChangeRequestDto){

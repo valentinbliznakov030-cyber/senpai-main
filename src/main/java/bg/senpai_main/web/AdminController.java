@@ -153,7 +153,6 @@ public class AdminController {
         return ResponseEntity.ok(commentGetResponseInfoDtoList);
     }
 
-
     @DeleteMapping("/profilePicture/{memberId}/{imageName}")
     public ResponseEntity<Void> deleteAnyProfilePicture(
             @PathVariable UUID memberId,
@@ -171,8 +170,4 @@ public class AdminController {
 
         return memberService.adminUploadImage(memberId, file);
     }
-
-
-
-
 }

@@ -1,12 +1,12 @@
 package bg.senpai_main.web;
 
 import bg.senpai_main.configs.MemberData;
-import bg.senpai_main.dtos.*;
+import bg.senpai_main.dtos.FavoriteAddRequestDto;
+import bg.senpai_main.dtos.FavoriteAnimeResponseInfoDto;
+import bg.senpai_main.dtos.FavouriteAddResponseDto;
 import bg.senpai_main.entities.Favorite;
 import bg.senpai_main.responses.FavoriteAnimeResponseDto;
-import bg.senpai_main.services.AnimeService;
 import bg.senpai_main.services.FavoriteService;
-import bg.senpai_main.services.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +23,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FavouriteController {
     private final FavoriteService favoriteService;
-    private final AnimeService animeService;
-    private final MemberService memberService;
 
     @GetMapping
     public ResponseEntity<?> getFavAnime(@AuthenticationPrincipal MemberData memberData, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "5") int size){
@@ -34,7 +32,6 @@ public class FavouriteController {
             UUID id = favorite.getId();
             String animeTitle = favorite.getAnime().getTitle();
             String hiAnimeId = favorite.getAnime().getHiAnimeId();
-
 
             return FavoriteAnimeResponseInfoDto
                     .builder()

@@ -7,13 +7,11 @@ import bg.senpai_main.dtos.memberDtos.MemberRegisterDTO;
 import bg.senpai_main.dtos.memberDtos.MemberResponseDto;
 import bg.senpai_main.dtos.memberDtos.UpdateProfileDto;
 import bg.senpai_main.entities.Member;
-import bg.senpai_main.exceptions.ImageNotDeletedException;
 import bg.senpai_main.services.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -48,7 +46,6 @@ public class MemberController {
                 .buildAndExpand(member.getId())
                 .toUri();
 
-
         MemberResponseDto memberResponseDto = MemberResponseDto.memberResponseDto(member);
         return ResponseEntity.created(location).body(memberResponseDto);
     }
@@ -73,7 +70,6 @@ public class MemberController {
         return ResponseEntity.ok("Profile updated successfully!");
     }
 
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginRequest loginRequest) {
         Authentication authentication = authenticationManager
@@ -94,8 +90,6 @@ public class MemberController {
         return ResponseEntity.noContent().build();
     }
 
-
-
     @PostMapping("/profilePicture")
     public ResponseEntity<String> uploadProfilePicture(@AuthenticationPrincipal MemberData user, @RequestParam("file") MultipartFile file) {
 
@@ -108,7 +102,6 @@ public class MemberController {
 
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            // Създаваме URL за снимката
             String url = "http://localhost:8080/profile-pictures/" + fileName;
             memberService.uploadPfp(url, user.getId());
             return ResponseEntity.ok(url);
@@ -117,9 +110,6 @@ public class MemberController {
             return ResponseEntity.status(500).body("File upload error");
         }
     }
-
-
-
 
     @GetMapping("/profilePicture")
     public ResponseEntity<String> uploadProfilePicture(@AuthenticationPrincipal MemberData user) {

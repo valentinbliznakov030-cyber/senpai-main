@@ -46,13 +46,11 @@ public class WatchHistoryController {
         return ResponseEntity.ok(responseDto);
     }
 
-
     @PostMapping()
     public ResponseEntity<Void> addToHistory(@AuthenticationPrincipal MemberData memberData, @RequestParam UUID episodeId) {
         watchHistoryService.addOrUpdateHistory(memberData.getId(), episodeId);
         return ResponseEntity.noContent().build();
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteEntry(

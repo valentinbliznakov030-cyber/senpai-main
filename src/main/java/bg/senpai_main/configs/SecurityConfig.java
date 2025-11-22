@@ -21,7 +21,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
-    private final MemberDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -52,17 +51,11 @@ public class SecurityConfig {
                         })
                 )
                 .authorizeHttpRequests(auth -> auth
-
-                        // ПУБЛИЧНИ: статични файлове (снимки)
                         .requestMatchers("/profile-pictures/**", "/uploads/**").permitAll()
-
-                        // ПУБЛИЧНИ: публични GET заявки
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/comments/**",
                                 "/api/v1/anime/**"
                         ).permitAll()
-
-                        // ПУБЛИЧНИ: публични POST заявки (register, login)
                         .requestMatchers(HttpMethod.POST,
                                 "/api/v1/anime/**",
                                 "/api/v1/episode/**",
@@ -70,8 +63,6 @@ public class SecurityConfig {
                                 "/api/v1/forgot-password/**"
                         ).permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-
-                        // Всичко останало → изисква токен
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -80,7 +71,6 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

@@ -16,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import bg.senpai_main.entities.Episode;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -51,13 +50,10 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.save(comment);
     }
 
-
     @Override
     public void removeComment(UUID commentId) {
         commentRepository.deleteById(commentId);
     }
-
-
 
     @Override
     public Comment updateComment(UUID commentEditorId, CommentChangeRequestDto commentChangeRequestDto) {
@@ -73,7 +69,6 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.save(foundCommentToChange);
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public Page<Comment> getCommentsForEpisode(UUID animeId, int pageNumber, int sizeNumber){
@@ -81,7 +76,6 @@ public class CommentServiceImpl implements CommentService {
 
         return commentRepository.findByEpisode(episode, PageRequest.of(pageNumber, sizeNumber));
     }
-
 
     @Override
     public Optional<Comment> getById(UUID commentId) {
@@ -107,7 +101,6 @@ public class CommentServiceImpl implements CommentService {
 
             List<Predicate> predicates = new ArrayList<>();
 
-
             if (commentId != null) {
                 predicates.add(criteriaBuilder.equal(root.get("id"), commentId));
             }
@@ -124,7 +117,6 @@ public class CommentServiceImpl implements CommentService {
                 predicates.add(criteriaBuilder.equal(root.get("updateOn"), updateOn));
             }
 
-
             if (username != null && !username.isEmpty()) {
                 predicates.add(criteriaBuilder.equal(root.get("member").get("username"), username));
             }
@@ -132,7 +124,6 @@ public class CommentServiceImpl implements CommentService {
             if (episodeId != null && !episodeId.isEmpty()) {
                 predicates.add(criteriaBuilder.equal(root.get("episode").get("id"), episodeId));
             }
-
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });

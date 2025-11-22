@@ -4,9 +4,7 @@ import bg.senpai.common.dtos.VideoCreationRequestDto;
 import bg.senpai.common.dtos.VideoCreationResponseDto;
 import bg.senpai_main.dtos.EpisodeCreationRequestDto;
 import bg.senpai_main.dtos.EpisodeCreationResponseDto;
-import bg.senpai_main.dtos.EpisodeGetRequestDto;
 import bg.senpai_main.entities.Episode;
-import bg.senpai_main.services.AnimeService;
 import bg.senpai_main.services.EpisodeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +16,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -51,8 +48,6 @@ public class EpisodeController {
 
         return ResponseEntity.created(uri).body(response);
     }
-
-
 
     @PostMapping("/video")
     public ResponseEntity<VideoCreationResponseDto> createVideo(@RequestBody VideoCreationRequestDto videoCreationRequestDto){

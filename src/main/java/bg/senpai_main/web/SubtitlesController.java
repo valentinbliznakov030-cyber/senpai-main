@@ -1,8 +1,6 @@
 package bg.senpai_main.web;
 
-
 import bg.senpai.common.dtos.SubtitlesDownloadRequestDto;
-import bg.senpai.common.dtos.SubtitlesDownloadedResponseDto;
 import bg.senpai.common.dtos.TranslateSubtitleResponseDto;
 import bg.senpai_main.configs.MemberData;
 import bg.senpai_main.services.SubtitlesService;

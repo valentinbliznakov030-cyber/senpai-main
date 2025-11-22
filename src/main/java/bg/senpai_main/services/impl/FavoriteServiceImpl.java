@@ -70,14 +70,12 @@ public class FavoriteServiceImpl implements FavoriteService {
         favoriteRepository.deleteById(id);
     }
 
-
     public Page<Favorite> getFavoritesAnimesByMember(UUID memberId, Integer page, Integer size) {
         memberService.findById(memberId).orElseThrow(() -> new EntityNotFoundException("Member not found!"));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         return favoriteRepository.findByMember_Id(memberId, pageable);
     }
-
 
     @Override
     public Optional<Favorite> findById(UUID id) {
