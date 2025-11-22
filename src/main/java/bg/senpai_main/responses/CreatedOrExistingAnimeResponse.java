@@ -11,6 +11,5 @@ import java.util.UUID;
 @Builder
 public class CreatedOrExistingAnimeResponse {
     private String animeTitle;
-    private String consumetAnimeId;
     private UUID animeId;
 }

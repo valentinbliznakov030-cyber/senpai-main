@@ -34,7 +34,6 @@ public class WatchHistoryServiceImpl implements WatchHistoryService {
         Episode episode = episodeService.findById(episodeId)
                 .orElseThrow(() -> new EntityNotFoundException("Episode not found"));
 
-        // Проверяваме дали вече съществува запис
         WatchHistory existing = watchHistoryRepository
                 .findByMember_IdAndEpisode_Id(memberId, episodeId)
                 .orElse(null);

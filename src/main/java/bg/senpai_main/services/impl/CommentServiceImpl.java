@@ -1,5 +1,6 @@
 package bg.senpai_main.services.impl;
 
+import bg.senpai_main.dtos.adminDtos.AdminCommentUpdateDto;
 import bg.senpai_main.dtos.commentDtos.*;
 import bg.senpai_main.entities.Comment;
 import bg.senpai_main.entities.Episode;
@@ -88,8 +89,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<Comment> findAll() {
-        return commentRepository.findAll();
+    public Page<Comment> findAll(int page, int size) {
+        return commentRepository.findAll(PageRequest.of(page, size));
     }
 
     @Override
@@ -135,5 +136,16 @@ public class CommentServiceImpl implements CommentService {
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         });
+    }
+
+    @Override
+    public Comment updateCommentByAdmin(AdminCommentUpdateDto dto) {
+        Comment comment = commentRepository.findById(dto.getCommentId())
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+
+        dto.getContent().ifPresent(comment::setContent);
+        comment.setUpdatedOn(LocalDateTime.now());
+
+        return commentRepository.save(comment);
     }
 }

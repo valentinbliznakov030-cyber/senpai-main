@@ -27,17 +27,19 @@ public class FavouriteController {
     private final MemberService memberService;
 
     @GetMapping
-    public ResponseEntity<?> getFavAnime(@AuthenticationPrincipal MemberData memberData, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "15") int size){
+    public ResponseEntity<?> getFavAnime(@AuthenticationPrincipal MemberData memberData, @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "5") int size){
         Page<Favorite> favorites = favoriteService.getFavoritesAnimesByMember(memberData.getId(), page - 1 , size);
 
         List<FavoriteAnimeResponseInfoDto> animeList = favorites.getContent().stream().map(favorite -> {
             UUID id = favorite.getId();
             String animeTitle = favorite.getAnime().getTitle();
+            String hiAnimeId = favorite.getAnime().getHiAnimeId();
 
 
             return FavoriteAnimeResponseInfoDto
                     .builder()
                     .animeTitle(animeTitle)
+                    .hiAnimeId(hiAnimeId)
                     .id(id)
                     .build();
         }).toList();
@@ -61,7 +63,6 @@ public class FavouriteController {
 
         FavouriteAddResponseDto favouriteAddResponseDto = FavouriteAddResponseDto
                 .builder()
-                .animeTitle(favorite.getAnime().getTitle())
                 .id(favorite.getId())
                 .success(true)
                 .statusCode(200)

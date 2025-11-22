@@ -53,24 +53,25 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
 
-                        // 🔥 ПУБЛИЧНИ: статични файлове (снимки)
+                        // ПУБЛИЧНИ: статични файлове (снимки)
                         .requestMatchers("/profile-pictures/**", "/uploads/**").permitAll()
 
-                        // 🔥 ПУБЛИЧНИ: публични GET заявки
+                        // ПУБЛИЧНИ: публични GET заявки
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/comments/**",
                                 "/api/v1/anime/**"
                         ).permitAll()
 
-                        // 🔥 ПУБЛИЧНИ: публични POST заявки (register, login)
+                        // ПУБЛИЧНИ: публични POST заявки (register, login)
                         .requestMatchers(HttpMethod.POST,
                                 "/api/v1/anime/**",
+                                "/api/v1/episode/**",
                                 "/api/v1/member/**",
                                 "/api/v1/forgot-password/**"
                         ).permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
-                        // 🔒 Всичко останало → изисква токен
+                        // Всичко останало → изисква токен
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

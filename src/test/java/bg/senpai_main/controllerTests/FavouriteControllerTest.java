@@ -54,25 +54,26 @@ public class FavouriteControllerTest {
     @Test
     @WithMockMember
     void shouldAddFavoriteSuccessfully() throws Exception {
-        Anime anime = Anime.builder().title("Fairy Tail").build();
-        UUID randomUUID = UUID.randomUUID();
+        UUID animeUUID = UUID.randomUUID();
+        UUID favouriteUUID = UUID.randomUUID();
+
+        Anime anime = Anime.builder().id(animeUUID).build();
         Favorite favorite = Favorite.builder()
-                .id(randomUUID)
+                .id(favouriteUUID)
                 .anime(anime)
                 .build();
 
         Mockito.when(favoriteService.addToFavorites(any(UUID.class), any(FavoriteAddRequestDto.class)))
                 .thenReturn(favorite);
 
-        FavoriteAddRequestDto request = new FavoriteAddRequestDto("Fairy Tail");
+        FavoriteAddRequestDto request = new FavoriteAddRequestDto(animeUUID);
 
         mockMvc.perform(post("/api/v1/favourite")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.animeTitle").value("Fairy Tail"))
-                .andExpect(jsonPath("$.id").value(randomUUID.toString()));
+                .andExpect(jsonPath("$.id").value(favouriteUUID.toString()));
     }
 
     @Test

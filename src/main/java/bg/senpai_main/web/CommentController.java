@@ -24,7 +24,7 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getCommentById(@PathVariable UUID commentId){
+    public ResponseEntity<?> getCommentById(@PathVariable("id") UUID commentId){
         return ResponseEntity.ok(commentService.getById(commentId).orElseThrow(() -> new IllegalArgumentException("Comment not found")));
     }
 
@@ -87,7 +87,7 @@ public class CommentController {
 
 
     @PatchMapping()
-    public ResponseEntity<?> changeComment(@AuthenticationPrincipal MemberData memberData, @RequestBody CommentChangeRequestDto commentChangeRequestDto){
+    public ResponseEntity<CommentChangeResponseDto> changeComment(@AuthenticationPrincipal MemberData memberData, @RequestBody CommentChangeRequestDto commentChangeRequestDto){
         Comment comment = commentService.updateComment(memberData.getId(), commentChangeRequestDto);
 
         CommentChangeResponseDto commentChangeResponseDto = CommentChangeResponseDto
@@ -96,7 +96,7 @@ public class CommentController {
                 .commentId(comment.getId())
                 .build();
 
-        return ResponseEntity.ok(commentChangeRequestDto);
+        return ResponseEntity.ok(commentChangeResponseDto);
     }
 
 }

@@ -4,14 +4,13 @@ import bg.senpai.common.dtos.VideoCreationRequestDto;
 import bg.senpai.common.dtos.VideoCreationResponseDto;
 import bg.senpai_main.dtos.EpisodeCreationRequestDto;
 import bg.senpai_main.dtos.EpisodeCreationResponseDto;
+import bg.senpai_main.dtos.EpisodeGetRequestDto;
 import bg.senpai_main.entities.Episode;
 import bg.senpai_main.services.AnimeService;
 import bg.senpai_main.services.EpisodeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -19,13 +18,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/episode")
 public class EpisodeController {
-    private final AnimeService animeService;
     private final EpisodeService episodeService;
 
     @PostMapping
@@ -33,11 +32,8 @@ public class EpisodeController {
         String sessionId = UUID.randomUUID().toString() + "_" +
                 DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")
                         .format(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
-        EpisodeCreationResponseDto response = null;
-        Episode episode = null;
 
-        episode = episodeService.findByEpisodeNumberAndConsumetAnimeId(episodeCreationRequestDto.getEpisodeNumber(), episodeCreationRequestDto.getConsumetAnimeId())
-                .orElseGet(() -> episodeService.createEpisode(episodeCreationRequestDto, sessionId));
+        Episode episode = episodeService.getEpisode(episodeCreationRequestDto, sessionId);
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequestUri()
@@ -45,18 +41,22 @@ public class EpisodeController {
                 .buildAndExpand(episode.getId())
                 .toUri();
 
-        response = EpisodeCreationResponseDto
+        EpisodeCreationResponseDto response = EpisodeCreationResponseDto
                 .builder()
                 .sessionId(sessionId)
                 .m3u8Link(episode.getM3u8Link())
                 .episodeNumber(episode.getEpisodeNumber())
+                .episodeId(episode.getId())
                 .build();
 
         return ResponseEntity.created(uri).body(response);
     }
 
+
+
     @PostMapping("/video")
     public ResponseEntity<VideoCreationResponseDto> createVideo(@RequestBody VideoCreationRequestDto videoCreationRequestDto){
         return ResponseEntity.ok(episodeService.createVideo(videoCreationRequestDto));
     }
+
 }

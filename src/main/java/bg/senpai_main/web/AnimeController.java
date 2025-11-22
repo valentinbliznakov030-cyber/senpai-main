@@ -20,16 +20,12 @@ public class AnimeController {
 
     @PostMapping
     public ResponseEntity<CreatedOrExistingAnimeResponse> createAnime(@RequestBody AnimeInfoRequestDto dto) {
-        Optional<Anime> existing = animeService.findByConsumetAnimeId(dto.getAnimeConsumetAnimeId());
-        CreatedOrExistingAnimeResponse response = null;
-        Anime anime = null;
+        Anime anime = animeService.getAnime(dto);
 
-        anime = existing.orElseGet(() -> animeService.createAnime(dto));
 
-        response = CreatedOrExistingAnimeResponse
+        CreatedOrExistingAnimeResponse response = CreatedOrExistingAnimeResponse
                 .builder()
                 .animeId(anime.getId())
-                .consumetAnimeId(anime.getConsumetAnimeId())
                 .animeTitle(anime.getTitle())
                 .build();
 
@@ -41,7 +37,4 @@ public class AnimeController {
 
         return ResponseEntity.created(uri).body(response);
     }
-
-
-
 }

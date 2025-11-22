@@ -7,6 +7,7 @@ import bg.senpai_main.dtos.memberDtos.MemberRegisterDTO;
 import bg.senpai_main.dtos.memberDtos.MemberResponseDto;
 import bg.senpai_main.dtos.memberDtos.UpdateProfileDto;
 import bg.senpai_main.entities.Member;
+import bg.senpai_main.exceptions.ImageNotDeletedException;
 import bg.senpai_main.services.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -86,6 +87,14 @@ public class MemberController {
         );
     }
 
+    @DeleteMapping("/profilePicture/{imageName}")
+    public ResponseEntity<Void> deleteProfilePfp(@AuthenticationPrincipal MemberData memberData, @PathVariable("imageName") String imageName){
+        memberService.delete(memberData, imageName);
+
+        return ResponseEntity.noContent().build();
+    }
+
+
 
     @PostMapping("/profilePicture")
     public ResponseEntity<String> uploadProfilePicture(@AuthenticationPrincipal MemberData user, @RequestParam("file") MultipartFile file) {
@@ -108,6 +117,9 @@ public class MemberController {
             return ResponseEntity.status(500).body("File upload error");
         }
     }
+
+
+
 
     @GetMapping("/profilePicture")
     public ResponseEntity<String> uploadProfilePicture(@AuthenticationPrincipal MemberData user) {

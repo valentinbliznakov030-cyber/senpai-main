@@ -1,5 +1,6 @@
 package bg.senpai_main.services;
 
+import bg.senpai_main.dtos.adminDtos.AdminCommentUpdateDto;
 import bg.senpai_main.dtos.commentDtos.*;
 import bg.senpai_main.entities.Comment;
 import org.springframework.data.domain.Page;
@@ -20,7 +21,7 @@ public interface CommentService {
 
     Optional<Comment> getById(UUID commentId);
 
-    List<Comment> findAll();
+    Page<Comment> findAll(int page, int size);
     List<Comment> findFilteredComments(
             UUID commentId,
             String content,
@@ -30,4 +31,6 @@ public interface CommentService {
             LocalDateTime createdOn,
             LocalDateTime updateOn
     );
+
+    Comment updateCommentByAdmin(AdminCommentUpdateDto adminCommentUpdateDto);
 }

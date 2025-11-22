@@ -1,6 +1,9 @@
 package bg.senpai_main.services.impl;
 
+import bg.senpai_main.dtos.forgotPasswordDtos.ChangePasswordRequestDto;
 import bg.senpai_main.entities.ForgotPasswordToken;
+import bg.senpai_main.entities.Member;
+import bg.senpai_main.exceptions.ChangePasswordDeniedException;
 import bg.senpai_main.exceptions.EntityNotFoundException;
 import bg.senpai_main.repositories.ForgotPasswordTokenRepository;
 import bg.senpai_main.services.ForgotPasswordService;
@@ -24,7 +27,7 @@ public class ForgotPasswordImpl implements ForgotPasswordService {
     private final JavaMailSender mailSender;
 
     @Override
-    public void sendResetCode(String email) {
+    public ForgotPasswordToken sendResetCode(String email) {
         tokenRepository.deleteByEmail(email);
         memberService.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Member not found"));
 
@@ -35,10 +38,9 @@ public class ForgotPasswordImpl implements ForgotPasswordService {
                 .token(code)
                 .expiration(LocalDateTime.now().plusMinutes(10))
                 .build();
-
-        tokenRepository.save(token);
-
         sendEmail(email, code);
+
+        return tokenRepository.save(token);
     }
     //sifhsdifnsfkcnsdfns
     @Override
@@ -51,7 +53,7 @@ public class ForgotPasswordImpl implements ForgotPasswordService {
 
         ForgotPasswordToken token = tokenOpt.get();
 
-        return token.getToken().equals(code) && !token.isExpired();
+        return token.getToken().equals(code) && !LocalDateTime.now().isAfter(token.getExpiration());
     }
 
 
@@ -77,4 +79,27 @@ public class ForgotPasswordImpl implements ForgotPasswordService {
 
         mailSender.send(message);
     }
+
+    public Member changePassword(ChangePasswordRequestDto changePasswordRequestDto) {
+        Optional<ForgotPasswordToken> tokenOpt = tokenRepository.findByEmail(changePasswordRequestDto.getEmail());
+
+        if (tokenOpt.isEmpty()) {
+            throw new ChangePasswordDeniedException("Cannot change password");
+        }
+
+        ForgotPasswordToken token = tokenOpt.get();
+
+        if (LocalDateTime.now().isAfter(token.getExpiration())) {
+            tokenRepository.deleteByEmail(changePasswordRequestDto.getEmail()); // delete expired token
+            throw new ChangePasswordDeniedException("Password reset token has expired.");
+        }
+
+        tokenRepository.deleteByEmail(changePasswordRequestDto.getEmail());
+
+        return memberService.changePassword(
+                changePasswordRequestDto.getEmail(),
+                changePasswordRequestDto.getPassword()
+        );
+    }
+
 }

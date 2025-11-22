@@ -27,7 +27,4 @@ public class ForgotPasswordToken {
     @Column(nullable = false)
     private LocalDateTime expiration;
 
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiration);
-    }
 }

@@ -47,8 +47,6 @@ public class FavoriteRepositoryIntegrationTest {
         Anime anime = new Anime();
         anime.setId(UUID.randomUUID());
         anime.setTitle("Demon Slayer");
-        anime.setEpisodeNumber(1);
-        anime.setM3u8Link("https://cdn.senpaibg.net/test/video12345/master.m3u8");
         anime = animeRepository.save(anime);
 
         Favorite favorite = new Favorite();

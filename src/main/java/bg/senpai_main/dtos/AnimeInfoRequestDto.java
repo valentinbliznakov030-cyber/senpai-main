@@ -11,5 +11,5 @@ import java.util.UUID;
 @NoArgsConstructor
 public class AnimeInfoRequestDto {
     private String animeTitle;
-    private String animeConsumetAnimeId;
+    private String hiAnimeId;
 }

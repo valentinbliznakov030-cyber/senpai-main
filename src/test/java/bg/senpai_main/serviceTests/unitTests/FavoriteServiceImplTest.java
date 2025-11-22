@@ -52,14 +52,14 @@ public class FavoriteServiceImplTest {
         anime.setTitle("Naruto");
 
         request = new FavoriteAddRequestDto();
-        request.setAnimeTitle("Naruto");
+        request.setAnimeId(UUID.randomUUID());
     }
 
     @Test
     void addToFavorites_shouldSaveNewFavorite_whenNotExists() {
         // Arrange
         when(memberService.findById(member.getId())).thenReturn(Optional.of(member));
-        when(animeService.findByTitle("Naruto")).thenReturn(Optional.of(anime));
+        when(animeService.findById(any(UUID.class))).thenReturn(Optional.of(anime));
         when(favoriteRepository.existsByMemberAndAnime(member, anime)).thenReturn(false);
         when(favoriteRepository.save(any(Favorite.class))).thenAnswer(i -> i.getArgument(0));
 

@@ -4,14 +4,13 @@ import bg.senpai_main.configs.JwtFilter;
 import bg.senpai_main.configs.JwtUtil;
 import bg.senpai_main.dtos.commentDtos.CommentAddRequestDto;
 import bg.senpai_main.dtos.commentDtos.CommentChangeRequestDto;
-import bg.senpai_main.entities.Anime;
-import bg.senpai_main.entities.Comment;
-import bg.senpai_main.entities.Member;
+import bg.senpai_main.entities.*;
 import bg.senpai_main.enums.Role;
 import bg.senpai_main.mockutilities.WithMockMember;
-import bg.senpai_main.services.AnimeService;
 import bg.senpai_main.services.CommentService;
+import bg.senpai_main.services.AnimeService;
 import bg.senpai_main.services.MemberService;
+import bg.senpai_main.services.EpisodeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.Test;
@@ -32,41 +31,48 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(bg.senpai_main.web.CommentController.class)
 @AutoConfigureMockMvc(addFilters = false)
 public class CommentControllerTest {
+
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
-    private CommentService commentService;
+    // Mock-ове
+    @MockBean private CommentService commentService;
+    @MockBean private AnimeService animeService;
+    @MockBean private EpisodeService episodeService;
+    @MockBean private MemberService memberService;
+    @MockBean private JwtFilter jwtFilter;
+    @MockBean private JwtUtil jwtUtil;
 
-    // други зависимости от контролера
-    @MockBean
-    private AnimeService animeService;
-    @MockBean
-    private MemberService memberService;
-    @MockBean
-    private JwtFilter jwtFilter;
-    @MockBean
-    private JwtUtil jwtUtil;
 
+    // -------------------------------------------------------------
+    // 🟣 1) Тест за успешно добавяне на коментар към епизод
+    // -------------------------------------------------------------
     @Test
     @WithMockMember
     void shouldAddCommentSuccessfully() throws Exception {
-        // Тест за POST /api/v1/comments
 
         UUID commentId = UUID.randomUUID();
-        UUID animeId = UUID.randomUUID();
+        UUID episodeId = UUID.randomUUID();
 
-        // подготвяме фалшив аниме и коментар
-        Anime anime = Anime.builder().id(animeId).title("Naruto").build();
+        Anime anime = Anime.builder()
+                .id(UUID.randomUUID())
+                .title("Naruto")
+                .build();
+
+        Episode episode = Episode.builder()
+                .id(episodeId)
+                .episodeNumber(1)
+                .anime(anime)
+                .build();
+
         Member member = Member.builder()
                 .id(UUID.fromString("a1e3f8b0-4d5c-4e67-9c2b-3a0f5e1b7c8d"))
                 .username("valkata")
@@ -76,16 +82,15 @@ public class CommentControllerTest {
 
         Comment comment = Comment.builder()
                 .id(commentId)
-                .anime(anime)
+                .episode(episode)
                 .member(member)
                 .content("Епизодът беше страхотен!")
                 .build();
 
         CommentAddRequestDto request = new CommentAddRequestDto();
-        request.setAnimeId(animeId);
+        request.setEpisodeId(episodeId);
         request.setContent("Епизодът беше страхотен!");
 
-        // мокваме сървиса
         Mockito.when(commentService.addComment(any(UUID.class), any(CommentAddRequestDto.class)))
                 .thenReturn(comment);
 
@@ -99,11 +104,28 @@ public class CommentControllerTest {
                 .andExpect(jsonPath("$.commentId").value(commentId.toString()));
     }
 
+
+
+    // -------------------------------------------------------------
+    // 🟣 2) Тест за GET коментари за епизод
+    // -------------------------------------------------------------
     @Test
     @WithMockMember
-    void shouldReturnCommentsForAnime() throws Exception {
-        UUID animeId = UUID.randomUUID();
+    void shouldReturnCommentsForEpisode() throws Exception {
+
+        UUID episodeId = UUID.randomUUID();
         UUID commentId = UUID.randomUUID();
+
+        Anime anime = Anime.builder()
+                .id(UUID.randomUUID())
+                .title("Naruto")
+                .build();
+
+        Episode episode = Episode.builder()
+                .id(episodeId)
+                .episodeNumber(10)
+                .anime(anime)
+                .build();
 
         Member member = Member.builder()
                 .id(UUID.randomUUID())
@@ -112,13 +134,11 @@ public class CommentControllerTest {
                 .role(Role.USER)
                 .build();
 
-        Anime anime = Anime.builder().id(animeId).title("Naruto").build();
-
         Comment comment = Comment.builder()
                 .id(commentId)
-                .anime(anime)
+                .episode(episode)
                 .member(member)
-                .content("Много добро аниме!")
+                .content("Много добър епизод!")
                 .build();
 
         Page<Comment> page = new PageImpl<>(List.of(comment), PageRequest.of(0, 15), 1);
@@ -127,16 +147,21 @@ public class CommentControllerTest {
                 .thenReturn(page);
 
         mockMvc.perform(get("/api/v1/comments")
-                        .param("animeId", animeId.toString())
+                        .param("episodeId", episodeId.toString())
                         .param("page", "0")
                         .param("size", "15"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.comments[0].content").value("Много добро аниме!"))
+                .andExpect(jsonPath("$.comments[0].content").value("Много добър епизод!"))
                 .andExpect(jsonPath("$.comments[0].commentCreator.username").value("Valka"))
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.first").value(true));
     }
 
+
+
+    // -------------------------------------------------------------
+    // 🟣 3) Тест за PATCH / промяна на коментар
+    // -------------------------------------------------------------
     @Test
     @WithMockMember
     void shouldChangeCommentSuccessfully() throws Exception {
@@ -150,16 +175,10 @@ public class CommentControllerTest {
                 .role(Role.USER)
                 .build();
 
-        Comment originalComment = Comment.builder()
+        Comment updated = Comment.builder()
                 .id(commentId)
-                .content("Първоначален коментар")
                 .member(member)
-                .build();
-
-        Comment updatedComment = Comment.builder()
-                .id(commentId)
                 .content("Редактиран коментар")
-                .member(member)
                 .build();
 
         CommentChangeRequestDto requestDto = new CommentChangeRequestDto();
@@ -167,7 +186,7 @@ public class CommentControllerTest {
         requestDto.setNewContent("Редактиран коментар");
 
         Mockito.when(commentService.updateComment(any(UUID.class), any(CommentChangeRequestDto.class)))
-                .thenReturn(updatedComment);
+                .thenReturn(updated);
 
         mockMvc.perform(patch("/api/v1/comments")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -176,7 +195,5 @@ public class CommentControllerTest {
                 .andExpect(jsonPath("$.commentId").value(commentId.toString()))
                 .andExpect(jsonPath("$.newContent").value("Редактиран коментар"));
     }
-
-
 
 }

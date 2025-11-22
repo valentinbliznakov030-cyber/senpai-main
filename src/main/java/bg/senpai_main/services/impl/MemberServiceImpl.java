@@ -1,18 +1,31 @@
 package bg.senpai_main.services.impl;
 
+import bg.senpai_main.configs.MemberData;
+import bg.senpai_main.dtos.adminDtos.AdminMemberUpdateDto;
 import bg.senpai_main.dtos.memberDtos.MemberRegisterDTO;
 import bg.senpai_main.dtos.memberDtos.UpdateProfileDto;
 import bg.senpai_main.entities.Member;
 import bg.senpai_main.enums.Role;
 import bg.senpai_main.exceptions.EntityNotFoundException;
+import bg.senpai_main.exceptions.ImageNotDeletedException;
+import bg.senpai_main.exceptions.ImageNotUplaodedException;
 import bg.senpai_main.repositories.MemberRepository;
 import bg.senpai_main.services.MemberService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -61,8 +74,8 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public List<Member> findAll() {
-        return memberRepository.findAll();
+    public Page<Member> findAll(int page, int size) {
+        return memberRepository.findAll(PageRequest.of(page, size));
     }
 
     @Override
@@ -180,5 +193,85 @@ public class MemberServiceImpl implements MemberService {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 
         }));
+    }
+
+    @Override
+    public void delete(MemberData memberData, String imageName) {
+        String uploadDir = "uploads/profile-pictures/";
+        String fileName = memberData.getId() + "_" + imageName;
+
+        Path filePath = Paths.get(uploadDir, fileName);
+        try{
+            boolean deleted = Files.deleteIfExists(filePath);
+            if (!deleted) {
+                throw new ImageNotDeletedException("Profile picture does not exist.");
+            }
+        }catch (Exception e){
+            throw new ImageNotDeletedException(e.getMessage());
+        }
+    }
+
+    @Override
+    public Member updateMemberByAdmin(AdminMemberUpdateDto dto) {
+
+        Member member = memberRepository.findById(dto.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Member not found"));
+
+        dto.getUsername().ifPresent(member::setUsername);
+        dto.getEmail().ifPresent(member::setEmail);
+        dto.getActive().ifPresent(member::setActive);
+        dto.getRole().ifPresent(member::setRole);
+
+        return memberRepository.save(member);
+    }
+
+
+    @Override
+    public void adminDeleteProfilePicture(UUID memberId, String imageName) {
+        Path uploadDir = Paths.get("uploads", "profile-pictures").toAbsolutePath();
+
+        String expectedFileName = memberId + "_" + imageName;
+        Path filePath = uploadDir.resolve(expectedFileName);
+
+        try {
+            boolean deleted = Files.deleteIfExists(filePath);
+
+            if (!deleted) {
+                throw new ImageNotDeletedException("Profile picture not found for this user.");
+            }
+
+        } catch (Exception e) {
+            throw new ImageNotDeletedException("Could not delete profile picture: " + e.getMessage());
+        }
+    }
+
+    public ResponseEntity<String> adminUploadImage(UUID memberId, MultipartFile file) {
+        try {
+            String uploadDir = "uploads/profile-pictures/";
+            Files.createDirectories(Paths.get(uploadDir));
+
+            String fileName = memberId + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(uploadDir + fileName);
+
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            String url = "http://localhost:8080/profile-pictures/" + fileName;
+
+            uploadPfp(url, memberId);
+
+            return ResponseEntity.ok(url);
+
+        } catch (ImageNotUplaodedException | IOException e) {
+            return ResponseEntity.status(500).body("File upload error: " + e.getMessage());
+        }
+    }
+
+
+
+    public Member changePassword(String email, String password){
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Member not found"));
+        member.setPassword(passwordEncoder.encode(password));
+
+        return memberRepository.save(member);
     }
 }

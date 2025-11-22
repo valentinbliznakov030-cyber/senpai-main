@@ -12,6 +12,5 @@ import java.util.UUID;
 public class FavouriteAddResponseDto {
     private boolean success;
     private int statusCode;
-    private String animeTitle;
     private UUID id;
 }

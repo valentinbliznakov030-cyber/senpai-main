@@ -37,7 +37,7 @@ public class MemberData implements UserDetails {
 
     @Override
     public String getUsername() {
-        return member.getPassword();
+        return member.getUsername();
     }
 
     @Override

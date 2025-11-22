@@ -2,9 +2,7 @@ package bg.senpai_main.exceptionHandlers;
 
 import bg.senpai_main.exceptions.EntityAlreadyExistException;
 import bg.senpai_main.exceptions.EntityNotFoundException;
-import feign.Feign;
 import feign.FeignException;
-import feign.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -54,24 +52,25 @@ public class GlobalExceptionHandler {
         ));
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleEntityNotFoundException(EntityNotFoundException ex){
-        return ResponseEntity.status(404).body(
+    @ExceptionHandler({
+            EntityNotFoundException.class,
+            EntityAlreadyExistException.class,
+            NullPointerException.class
+    })
+
+    public ResponseEntity<Map<String, Object>> handleCommonBusinessExceptions(RuntimeException ex) {
+
+        HttpStatus status = ex instanceof EntityAlreadyExistException ?
+                HttpStatus.CONFLICT :
+                HttpStatus.NOT_FOUND;
+
+        return ResponseEntity.status(status).body(
                 Map.of(
                         "success", false,
-                        "statusCode", 404,
+                        "statusCode", status.value(),
                         "message", ex.getMessage()
                 )
         );
     }
 
-    @ExceptionHandler(EntityAlreadyExistException.class)
-    public ResponseEntity<Map<String, Object>> handleEntityAlreadyExistException(EntityAlreadyExistException ex){
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                Map.of("success", false,
-                        "statusCode", 409,
-                        "message", ex.getMessage()
-                )
-        );
-    }
 }

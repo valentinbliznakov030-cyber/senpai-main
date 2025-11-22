@@ -13,6 +13,7 @@ import java.util.UUID;
 public class WatchHistoryResponseInfoDto {
     private UUID watchHistoryId;
     private String animeTitle;
+    private String hiAnimeId;
     private int episodeNumber;
     private LocalDateTime updatedOn;
 }

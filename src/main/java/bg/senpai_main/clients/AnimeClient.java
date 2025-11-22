@@ -27,5 +27,8 @@ public interface AnimeClient {
 
     @PostMapping(value = "/subtitles", produces = "application/json")
     ResponseEntity<SubtitlesDownloadedResponseDto> downloadSubtitles(@RequestBody SubtitlesDownloadRequestDto subtitlesDownloadRequestDto);
+
+    @PostMapping(value = "/subtitles/translation", produces = "application/json")
+    ResponseEntity<TranslateSubtitleResponseDto> translateSubtitles(@RequestBody TranslateSubtitleRequestDto translateSubtitleRequestDto);
 }
 

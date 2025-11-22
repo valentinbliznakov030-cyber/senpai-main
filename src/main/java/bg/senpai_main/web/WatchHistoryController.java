@@ -27,21 +27,19 @@ public class WatchHistoryController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size
     ) {
-        // ⚡ Page<WatchHistory>
         Page<WatchHistory> historyPage =
                 watchHistoryService.getHistory(memberData.getId(), page - 1, size);
 
-        // ⚡ Превръщаме WatchHistory -> WatchHistoryResponseInfoDto
-        List<WatchHistoryResponseInfoDto> infoList = historyPage.getContent().stream().map(entry ->
+        List<WatchHistoryResponseInfoDto> infoList = historyPage.getContent().stream().map(history ->
                         WatchHistoryResponseInfoDto.builder()
-                                .watchHistoryId(entry.getId())
-                                .animeTitle(entry.getEpisode().getAnime().getTitle())
-                                .episodeNumber(entry.getEpisode().getEpisodeNumber())
-                                .updatedOn(entry.getUpdatedOn())
+                                .watchHistoryId(history.getId())
+                                .animeTitle(history.getEpisode().getAnime().getTitle())
+                                .hiAnimeId(history.getEpisode().getAnime().getHiAnimeId())
+                                .episodeNumber(history.getEpisode().getEpisodeNumber())
+                                .updatedOn(history.getUpdatedOn())
                                 .build()
                 ).toList();
 
-        // ⚡ Правим финалния DTO
         WatchHistoryResponseDto responseDto =
                 new WatchHistoryResponseDto(historyPage, infoList);
 

@@ -21,13 +21,12 @@ public class Anime {
     private String title;
 
     @Column(nullable = false)
-    private String consumetAnimeId;
-
-    @Column(nullable = false, unique = true)
-    private String m3u8Link;
+    private String hiAnimeId;
 
     @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Favorite> favorites = new ArrayList<>();
 
+    @OneToMany(mappedBy = "anime", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Episode> episodes = new ArrayList<>();
 
 }

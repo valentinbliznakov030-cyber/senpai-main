@@ -36,8 +36,7 @@ public class EpisodeServiceImpl implements EpisodeService {
     public Episode createEpisode(EpisodeCreationRequestDto episodeCreationRequestDto, String sessionId) {
         String episodeUrl = episodeCreationRequestDto.getEpisodeUrl();
         Integer episodeNumber = episodeCreationRequestDto.getEpisodeNumber();
-        String consumetAnimeId = episodeCreationRequestDto.getConsumetAnimeId();
-        Anime anime = animeService.findByConsumetAnimeId(consumetAnimeId).orElseThrow(() -> new EntityNotFoundException("Anime not found"));
+        Anime anime = animeService.findById(episodeCreationRequestDto.getAnimeId()).orElseThrow(() -> new EntityNotFoundException("Anime not found"));
 
         String m3u8Link = getM3U8Link(episodeUrl, sessionId);
 
@@ -60,6 +59,10 @@ public class EpisodeServiceImpl implements EpisodeService {
 
         if (body == null || !body.isSuccess()) {
             throw new IllegalArgumentException("M3U8Link not found!");
+        }
+
+        if(body.getM3u8Link() == null || body.getM3u8Link().isBlank() || body.getM3u8Link().isEmpty()){
+            throw new EntityNotFoundException("m3u8Link не е намерен");
         }
 
         return body.getM3u8Link();
@@ -85,9 +88,25 @@ public class EpisodeServiceImpl implements EpisodeService {
     }
 
     @Override
-    public Optional<Episode> findByEpisodeNumberAndConsumetAnimeId(Integer episodeNumber, String consumetAnimeId) {
-        Anime anime = animeService.findByConsumetAnimeId(consumetAnimeId).orElseThrow(() -> new EntityNotFoundException("Anime not found!"));
+    public Optional<Episode> findByEpisodeNumberAndAnimeId(Integer episodeNumber, UUID animeId) {
+        Anime anime = animeService.findById(animeId).orElseThrow(() -> new EntityNotFoundException("Anime not found!"));
 
         return episodeRepository.findByEpisodeNumberAndAnime(episodeNumber, anime);
+    }
+
+    public Episode getEpisode(EpisodeCreationRequestDto episodeCreationRequestDto, String sessionId) {
+        return findByEpisodeNumberAndAnimeId(episodeCreationRequestDto.getEpisodeNumber(), episodeCreationRequestDto.getAnimeId())
+                .orElseGet(() -> createEpisode(episodeCreationRequestDto, sessionId));
+    }
+
+
+    @Override
+    public Episode findEpisodeByHiAnimeId(String hiAnimeId, int episodeNumber) {
+        Anime anime = animeService.findByHiAnimeId(hiAnimeId).orElse(null);
+        if(anime == null) return null;
+
+        Optional<Episode> episode = anime.getEpisodes().stream().filter(ep -> ep.getEpisodeNumber() == episodeNumber).findFirst();
+
+        return episode.orElse(null);
     }
 }

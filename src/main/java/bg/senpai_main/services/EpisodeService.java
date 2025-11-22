@@ -14,7 +14,11 @@ public interface EpisodeService {
     VideoCreationResponseDto createVideo(VideoCreationRequestDto videoCreationRequestDto);
     String getM3U8Link(String url, String sessionId);
     Optional<Episode> findByEpisodeNumberAndAnime(Integer episodeNumber, Anime anime);
-    Optional<Episode> findByEpisodeNumberAndConsumetAnimeId(Integer episodeNumber, String consumetAnimeId);
+    Optional<Episode> findByEpisodeNumberAndAnimeId(Integer episodeNumber, UUID animeId);
     Optional<Episode> findById(UUID episodeId);
+
+    Episode getEpisode(EpisodeCreationRequestDto episodeCreationRequestDto, String sessionId);
+
+    Episode findEpisodeByHiAnimeId(String hiAnimeId, int episodeNumber);
 
 }
