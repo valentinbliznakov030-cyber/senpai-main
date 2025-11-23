@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @FeignClient(
         name = "anime-service",
-        url = "http://localhost:8081/api/v1/",
+        url = "${anime.service.url:http://localhost:8081/api/v1/}",
         configuration = FeignConfig.class
 )
 public interface AnimeClient {

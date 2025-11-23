@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.UUID;
 
-@FeignClient(name = "subscription-service", url = "http://localhost:8082/api/v1/subscriptions")
+@FeignClient(name = "subscription-service", url = "${subscription.service.url:http://localhost:8082/api/v1/subscriptions}")
 public interface SubscriptionClient {
     @GetMapping("/{userId}")
     SubscriptionStatusDTO getStatus(@PathVariable UUID userId);
