@@ -14,7 +14,7 @@ public interface FavoriteService {
 
     Favorite addToFavorites(UUID memberId, FavoriteAddRequestDto favoriteAddRequestDto);
 
-    void removeFavourite(UUID favouriteId);
+    void removeFavourite(UUID memberId, UUID favouriteId);
 
     boolean isFavorite(Member member, Anime anime);
 

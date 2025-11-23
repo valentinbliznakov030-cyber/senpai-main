@@ -1,5 +1,8 @@
 package bg.senpai_main.configs;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -19,19 +22,38 @@ public class RedisConfig {
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofHours(1))
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
+        ObjectMapper redisObjectMapper = new ObjectMapper();
+        redisObjectMapper.findAndRegisterModules();
+        redisObjectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        redisObjectMapper.activateDefaultTyping(
+                redisObjectMapper.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY
+        );
+
+        GenericJackson2JsonRedisSerializer serializer =
+                new GenericJackson2JsonRedisSerializer(redisObjectMapper);
+
+        RedisSerializationContext.SerializationPair<Object> valuePair =
+                RedisSerializationContext.SerializationPair.fromSerializer(serializer);
+
+        RedisSerializationContext.SerializationPair<String> keyPair =
+                RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer());
+
+        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(30))
+                .serializeKeysWith(keyPair)
+                .serializeValuesWith(valuePair)
                 .disableCachingNullValues();
 
         return RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(config)
-                .withCacheConfiguration("subscription", RedisCacheConfiguration.defaultCacheConfig()
-                        .entryTtl(Duration.ofHours(1)))
-                .withCacheConfiguration("member", RedisCacheConfiguration.defaultCacheConfig()
-                        .entryTtl(Duration.ofMinutes(30)))
+                .cacheDefaults(defaultConfig)
+                .withCacheConfiguration("subscription",
+                        defaultConfig.entryTtl(Duration.ofHours(1)))
+                .withCacheConfiguration("member",
+                        defaultConfig.entryTtl(Duration.ofMinutes(30)))
+                .withCacheConfiguration("memberDto",
+                        defaultConfig.entryTtl(Duration.ofMinutes(10)))
                 .build();
     }
 }
-

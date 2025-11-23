@@ -5,12 +5,14 @@ import bg.senpai_main.enums.Role;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @Builder
 public class MemberResponseDto {
+    private UUID memberId;
     private String email;
     private String username;
     private Role role;
@@ -28,6 +30,7 @@ public class MemberResponseDto {
                 .role(member.getRole())
                 .registeredOn(member.getRegisteredOn())
                 .active(member.isActive())
+                .memberId(member.getId())
                 .build();
     }
 }

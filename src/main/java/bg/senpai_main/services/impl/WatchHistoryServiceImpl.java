@@ -66,7 +66,7 @@ public class WatchHistoryServiceImpl implements WatchHistoryService {
         WatchHistory history = watchHistoryRepository.findById(historyId)
                 .orElseThrow(() -> new RuntimeException("History entry not found"));
 
-        if (!history.getMember().getId().equals(memberId)) {
+        if (history.getMember().getId().compareTo(memberId) != 0) {
             throw new RuntimeException("Unauthorized delete");
         }
 

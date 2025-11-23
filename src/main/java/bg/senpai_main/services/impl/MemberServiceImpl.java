@@ -40,7 +40,6 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-    private final CacheManager cacheManager;
 
     // ======================
     // REGISTRATION
@@ -296,16 +295,13 @@ public class MemberServiceImpl implements MemberService {
     // ======================
     // CHANGE PASSWORD
     // ======================
-    @CacheEvict(value = "memberDto", key = "#memberId")
-    public Member changePassword(String email, String password){
+    @CacheEvict(value = "memberDto", key = "#member.id")
+    public Member changePassword(String email, String password) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Member not found"));
 
-        UUID memberId = member.getId();
-
         member.setPassword(passwordEncoder.encode(password));
-        Member saved = memberRepository.save(member);
-
-        return saved;
+        return memberRepository.save(member);
     }
+
 }

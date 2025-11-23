@@ -50,8 +50,13 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
-    public void removeFavourite(UUID favouriteId) {
-        Favorite favorite = favoriteRepository.findById(favouriteId).orElseThrow(() -> new EntityNotFoundException("Favourite not found"));
+    public void removeFavourite(UUID memberId, UUID favouriteId) {
+        Favorite favorite = favoriteRepository.findById(favouriteId)
+                .orElseThrow(() -> new EntityNotFoundException("Favourite not found"));
+
+        if(favorite.getMember().getId().compareTo(memberId) != 0){
+            throw new RuntimeException("unauthorized delete");
+        }
         favoriteRepository.delete(favorite);
     }
 

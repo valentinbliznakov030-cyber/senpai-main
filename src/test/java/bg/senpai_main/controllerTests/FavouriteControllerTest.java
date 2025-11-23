@@ -114,6 +114,6 @@ public class FavouriteControllerTest {
         mockMvc.perform(delete("/api/v1/favourite/" + favId))
                 .andExpect(status().isNoContent());
 
-        Mockito.verify(favoriteService).removeFavourite(favId);
+        Mockito.verify(favoriteService).removeFavourite(any(UUID.class), favId);
     }
 }

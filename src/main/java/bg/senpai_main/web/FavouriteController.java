@@ -71,8 +71,8 @@ public class FavouriteController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removeFavourite(@PathVariable("id") UUID id){
-        favoriteService.removeFavourite(id);
+    public ResponseEntity<Void> removeFavourite(@AuthenticationPrincipal MemberData memberData, @PathVariable("id") UUID id){
+        favoriteService.removeFavourite(memberData.getId(), id);
         return ResponseEntity.noContent().build();
     }
 
