@@ -3,6 +3,7 @@ package bg.senpai_main.services.impl;
 import bg.senpai_main.configs.MemberData;
 import bg.senpai_main.dtos.adminDtos.AdminMemberUpdateDto;
 import bg.senpai_main.dtos.memberDtos.MemberRegisterDTO;
+import bg.senpai_main.dtos.memberDtos.MemberResponseDto;
 import bg.senpai_main.dtos.memberDtos.UpdateProfileDto;
 import bg.senpai_main.entities.Member;
 import bg.senpai_main.enums.Role;
@@ -41,6 +42,9 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     private final CacheManager cacheManager;
 
+    // ======================
+    // REGISTRATION
+    // ======================
     @Override
     public Member registerMember(MemberRegisterDTO dto) {
         if (memberRepository.findByEmail(dto.getEmail()).isPresent()) {
@@ -62,6 +66,9 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.save(member);
     }
 
+    // ======================
+    // BASIC FINDERS (NO CACHE)
+    // ======================
     @Override
     public Optional<Member> findByEmail(String email) {
         return memberRepository.findByEmail(email);
@@ -73,7 +80,6 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    @Cacheable(value = "member", key = "#id")
     public Optional<Member> findById(UUID id) {
         return memberRepository.findById(id);
     }
@@ -83,8 +89,23 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.findAll(PageRequest.of(page, size));
     }
 
+    // ======================
+    // READ-ONLY DTO (CACHED)
+    // ======================
     @Override
-    @CacheEvict(value = "member", key = "#memberId")
+    @Cacheable(value = "memberDto", key = "#id")
+    public MemberResponseDto getMemberDto(UUID id) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found"));
+
+        return MemberResponseDto.memberResponseDto(member);
+    }
+
+    // ======================
+    // UPDATE METHODS (CACHE EVICT)
+    // ======================
+    @Override
+    @CacheEvict(value = "memberDto", key = "#memberId")
     public Member changeRole(UUID memberId, Role newRole) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NoSuchElementException("Member not found!"));
@@ -93,7 +114,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    @CacheEvict(value = "member", key = "#memberId")
+    @CacheEvict(value = "memberDto", key = "#memberId")
     public void toggleActive(UUID memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NoSuchElementException("Member not found!"));
@@ -102,119 +123,123 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    @CacheEvict(value = "member", key = "#memberId")
+    @CacheEvict(value = "memberDto", key = "#memberId")
     public void deleteMember(UUID memberId) {
         memberRepository.deleteById(memberId);
     }
 
     @Override
     public boolean deleteAll() {
-        try{
-            memberRepository.deleteAll();
-            return true;
-        } catch (Exception e) {
-            throw e;
-        }
+        memberRepository.deleteAll();
+        return true;
     }
 
+    // ======================
+    // PROFILE PICTURE
+    // ======================
     @Override
-    public String pFpUrl(UUID memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("Member not found"));
-        return member.getProfilePictureUrl();
-    }
-
-    @Override
-    @CacheEvict(value = "member", key = "#memberId")
+    @CacheEvict(value = "memberDto", key = "#memberId")
     public void uploadPfp(String url, UUID memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("member not found"));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found"));
         member.setProfilePictureUrl(url);
         memberRepository.save(member);
     }
 
     @Override
-    @Transactional
-    @CacheEvict(value = "member", key = "#memberId")
-    public void updateProfile(UUID memberId, UpdateProfileDto dto) {
-
+    public String pFpUrl(UUID memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new EntityNotFoundException("Member not found"));
-
-        if (dto.getUsername() != null && !dto.getUsername().isBlank()) {
-            if (!dto.getUsername().equalsIgnoreCase(member.getUsername())) {
-
-                boolean exists = memberRepository.existsByUsername(dto.getUsername());
-                if (exists) {
-                    throw new IllegalArgumentException("Username is already taken.");
-                }
-
-                member.setUsername(dto.getUsername());
-            }
-        }
-
-        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
-
-            if (!dto.getEmail().equalsIgnoreCase(member.getEmail())) {
-
-                boolean exists = memberRepository.existsByEmail(dto.getEmail());
-                if (exists) {
-                    throw new IllegalArgumentException("Email is already in use.");
-                }
-
-                member.setEmail(dto.getEmail());
-            }
-        }
-
-        memberRepository.save(member);
+        return member.getProfilePictureUrl();
     }
 
     @Override
-    public List<Member> findFilteredMembers(String username, String email, Boolean active, Role role, LocalDateTime registeredOn) {
+    public List<Member> findFilteredMembers(String username,
+                                            String email,
+                                            Boolean active,
+                                            Role role,
+                                            LocalDateTime registeredOn) {
 
-        return memberRepository.findAll(((root, query, criteriaBuilder) -> {
+        return memberRepository.findAll((root, query, builder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (username != null && !username.isEmpty()) {
-                predicates.add(criteriaBuilder.equal(root.get("username"), username));
+                predicates.add(builder.equal(root.get("username"), username));
             }
 
             if (email != null && !email.isEmpty()) {
-                predicates.add(criteriaBuilder.equal(root.get("email"), email));
+                predicates.add(builder.equal(root.get("email"), email));
             }
 
             if (active != null) {
-                predicates.add(criteriaBuilder.equal(root.get("active"), active));
+                predicates.add(builder.equal(root.get("active"), active));
             }
 
             if (role != null) {
-                predicates.add(criteriaBuilder.equal(root.get("role"), role));
+                predicates.add(builder.equal(root.get("role"), role));
             }
 
             if (registeredOn != null) {
-                predicates.add(criteriaBuilder.equal(root.get("registeredOn"), registeredOn));
+                predicates.add(builder.equal(root.get("registeredOn"), registeredOn));
             }
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
 
-        }));
+            return builder.and(predicates.toArray(new Predicate[0]));
+        });
     }
-
     @Override
     public void delete(MemberData memberData, String imageName) {
         String uploadDir = "uploads/profile-pictures/";
         String fileName = memberData.getId() + "_" + imageName;
 
         Path filePath = Paths.get(uploadDir, fileName);
-        try{
+
+        try {
             boolean deleted = Files.deleteIfExists(filePath);
+
             if (!deleted) {
                 throw new ImageNotDeletedException("Profile picture does not exist.");
             }
-        }catch (Exception e){
+
+        } catch (Exception e) {
             throw new ImageNotDeletedException(e.getMessage());
         }
     }
 
+    // ======================
+    // PROFILE UPDATE
+    // ======================
     @Override
-    @CacheEvict(value = "member", key = "#dto.id")
+    @CacheEvict(value = "memberDto", key = "#memberId")
+    public void updateProfile(UUID memberId, UpdateProfileDto dto) {
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found"));
+
+        if (dto.getUsername() != null && !dto.getUsername().isBlank()) {
+            if (!dto.getUsername().equalsIgnoreCase(member.getUsername()) &&
+                    memberRepository.existsByUsername(dto.getUsername())) {
+                throw new IllegalArgumentException("Username already taken.");
+            }
+            member.setUsername(dto.getUsername());
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
+            if (!dto.getEmail().equalsIgnoreCase(member.getEmail()) &&
+                    memberRepository.existsByEmail(dto.getEmail())) {
+                throw new IllegalArgumentException("Email already in use.");
+            }
+            member.setEmail(dto.getEmail());
+        }
+
+        memberRepository.save(member);
+    }
+
+
+    // ======================
+    // ADMIN UPDATE
+    // ======================
+    @Override
+    @CacheEvict(value = "memberDto", key = "#dto.id")
     public Member updateMemberByAdmin(AdminMemberUpdateDto dto) {
 
         Member member = memberRepository.findById(dto.getId())
@@ -231,15 +256,12 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void adminDeleteProfilePicture(UUID memberId, String imageName) {
         Path uploadDir = Paths.get("uploads", "profile-pictures").toAbsolutePath();
-
-        String expectedFileName = memberId + "_" + imageName;
-        Path filePath = uploadDir.resolve(expectedFileName);
+        Path filePath = uploadDir.resolve(memberId + "_" + imageName);
 
         try {
             boolean deleted = Files.deleteIfExists(filePath);
-
             if (!deleted) {
-                throw new ImageNotDeletedException("Profile picture not found for this user.");
+                throw new ImageNotDeletedException("Profile picture not found.");
             }
 
         } catch (Exception e) {
@@ -247,6 +269,9 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+    // ======================
+    // ADMIN UPLOAD IMAGE
+    // ======================
     public ResponseEntity<String> adminUploadImage(UUID memberId, MultipartFile file) {
         try {
             String uploadDir = "uploads/profile-pictures/";
@@ -263,17 +288,24 @@ public class MemberServiceImpl implements MemberService {
 
             return ResponseEntity.ok(url);
 
-        } catch (ImageNotUplaodedException | IOException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(500).body("File upload error: " + e.getMessage());
         }
     }
 
+    // ======================
+    // CHANGE PASSWORD
+    // ======================
+    @CacheEvict(value = "memberDto", key = "#memberId")
     public Member changePassword(String email, String password){
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("Member not found"));
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Member not found"));
+
         UUID memberId = member.getId();
+
         member.setPassword(passwordEncoder.encode(password));
         Member saved = memberRepository.save(member);
-        cacheManager.getCache("member").evictIfPresent(memberId);
+
         return saved;
     }
 }

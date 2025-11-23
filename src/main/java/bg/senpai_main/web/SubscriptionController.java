@@ -20,7 +20,7 @@ public class SubscriptionController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping
     public ResponseEntity<SubscriptionStatusDTO> getStatus(@AuthenticationPrincipal MemberData memberData) {
         SubscriptionStatusDTO subscriptionStatusDTO = service.getStatus(memberData.getId());
 

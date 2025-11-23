@@ -3,9 +3,11 @@ package bg.senpai_main.services;
 import bg.senpai_main.configs.MemberData;
 import bg.senpai_main.dtos.adminDtos.AdminMemberUpdateDto;
 import bg.senpai_main.dtos.memberDtos.MemberRegisterDTO;
+import bg.senpai_main.dtos.memberDtos.MemberResponseDto;
 import bg.senpai_main.dtos.memberDtos.UpdateProfileDto;
 import bg.senpai_main.entities.Member;
 import bg.senpai_main.enums.Role;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,4 +58,7 @@ public interface MemberService {
     ResponseEntity<String> adminUploadImage(UUID memberId, MultipartFile file);
 
     Member changePassword(String email, String password);
+
+    @Cacheable(value = "memberDto", key = "#id")
+    MemberResponseDto getMemberDto(UUID id);
 }

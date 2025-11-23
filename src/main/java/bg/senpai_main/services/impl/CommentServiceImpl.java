@@ -30,8 +30,8 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final MemberService memberService;
     private final EpisodeService episodeService;
+
     @Override
-    @Transactional
     public Comment addComment(UUID memberId, CommentAddRequestDto dto) {
         Member member = memberService.findById(memberId)
                 .orElseThrow(() -> new EntityNotFoundException("Member not found"));

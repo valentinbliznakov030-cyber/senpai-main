@@ -51,18 +51,15 @@ public class MemberController {
     }
 
     @GetMapping("/member/{id}")
-    public ResponseEntity<?> getId(@PathVariable UUID id){
-        Member member = memberService.findById(id).orElseThrow(() -> new UsernameNotFoundException("Member not found"));
-        MemberResponseDto memberResponseDto = MemberResponseDto.memberResponseDto(member);
-        return ResponseEntity.ok(memberResponseDto);
+    public ResponseEntity<?> getById(@PathVariable UUID id){
+        return ResponseEntity.ok(memberService.getMemberDto(id));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getMe(@AuthenticationPrincipal MemberData memberData){
-        Member member = memberService.findById(memberData.getId()).orElseThrow(() -> new UsernameNotFoundException("Member not found"));
-        MemberResponseDto memberResponseDto = MemberResponseDto.memberResponseDto(member);
-        return ResponseEntity.ok(memberResponseDto);
+    public ResponseEntity<?> getMe(@AuthenticationPrincipal MemberData memberData) {
+        return ResponseEntity.ok(memberService.getMemberDto(memberData.getId()));
     }
+
 
     @PutMapping("/update")
     public ResponseEntity<?> updateProfile(@AuthenticationPrincipal MemberData memberData, @RequestBody @Valid UpdateProfileDto dto) {
