@@ -1,4 +1,4 @@
-package bg.senpai_main.serviceTests.unitTests;
+package bg.senpai_main.serviceTests;
 
 import bg.senpai_main.dtos.memberDtos.MemberRegisterDTO;
 import bg.senpai_main.entities.Member;

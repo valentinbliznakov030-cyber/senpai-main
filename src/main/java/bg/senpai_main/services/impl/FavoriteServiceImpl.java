@@ -40,7 +40,6 @@ public class FavoriteServiceImpl implements FavoriteService {
             throw new EntityAlreadyExistException("Anime already in favorites!");
         }
 
-
         Favorite favorite = Favorite.builder()
                 .member(member)
                 .anime(anime)
@@ -60,20 +59,6 @@ public class FavoriteServiceImpl implements FavoriteService {
         favoriteRepository.delete(favorite);
     }
 
-    @Override
-    public boolean isFavorite(Member member, Anime anime) {
-        return favoriteRepository.existsByMemberAndAnime(member, anime);
-    }
-
-    @Override
-    public List<Favorite> getFavoritesByMember(Member member) {
-        return favoriteRepository.findByMember(member);
-    }
-
-    @Override
-    public void deleteById(UUID id) {
-        favoriteRepository.deleteById(id);
-    }
 
     public Page<Favorite> getFavoritesAnimesByMember(UUID memberId, Integer page, Integer size) {
         memberService.findById(memberId).orElseThrow(() -> new EntityNotFoundException("Member not found!"));

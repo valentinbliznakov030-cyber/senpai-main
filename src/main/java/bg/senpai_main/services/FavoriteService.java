@@ -16,12 +16,6 @@ public interface FavoriteService {
 
     void removeFavourite(UUID memberId, UUID favouriteId);
 
-    boolean isFavorite(Member member, Anime anime);
-
-    List<Favorite> getFavoritesByMember(Member member);
-
-    void deleteById(UUID id);
-
     Page<Favorite> getFavoritesAnimesByMember(UUID memberId, Integer page, Integer size);
 
     Optional<Favorite> findById(UUID id);
