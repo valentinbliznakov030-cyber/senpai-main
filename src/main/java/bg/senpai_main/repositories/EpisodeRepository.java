@@ -10,6 +10,5 @@ import java.util.UUID;
 
 @Repository
 public interface EpisodeRepository extends JpaRepository<Episode, UUID> {
-    boolean existsByEpisodeNumberAndAnime(Integer episodeNumber, Anime anime);
     Optional<Episode> findByEpisodeNumberAndAnime(Integer episodeNumber, Anime anime);
 }

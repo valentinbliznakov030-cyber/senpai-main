@@ -2,6 +2,8 @@ package bg.senpai_main.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -24,5 +26,18 @@ public class Favorite {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "anime_id", nullable = false)
     private Anime anime;
+
+
+//    @Override
+//    public boolean equals(Object o) {
+//        if (o == null || getClass() != o.getClass()) return false;
+//        Favorite other = (Favorite) o;
+//        return Objects.equals(id, other.id);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(id);
+//    }
 }
 

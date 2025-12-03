@@ -51,10 +51,6 @@ public class CommentControllerTest {
     @MockBean private JwtFilter jwtFilter;
     @MockBean private JwtUtil jwtUtil;
 
-
-    // -------------------------------------------------------------
-    // 🟣 1) Тест за успешно добавяне на коментар към епизод
-    // -------------------------------------------------------------
     @Test
     @WithMockMember
     void shouldAddCommentSuccessfully() throws Exception {
@@ -104,11 +100,6 @@ public class CommentControllerTest {
                 .andExpect(jsonPath("$.commentId").value(commentId.toString()));
     }
 
-
-
-    // -------------------------------------------------------------
-    // 🟣 2) Тест за GET коментари за епизод
-    // -------------------------------------------------------------
     @Test
     @WithMockMember
     void shouldReturnCommentsForEpisode() throws Exception {
